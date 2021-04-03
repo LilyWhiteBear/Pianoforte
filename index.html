@@ -35,11 +35,12 @@
             name: 'PURE PHRASE',
             path: 'sounds/09._PURE_PHRASE.ogg',
             time: 310,
-            rank: 8
+            rank: 4
         }]
 
         let comboText;
         let scoreText;
+        let playing_accuracyText;
         let hitTextS;
         let hitTextD;
         let hitTextK;
@@ -104,6 +105,8 @@
         let goodTap = 0;
         let badTap = 0;
         let missTap = 0;
+        let accuracy = 0;
+        let accuracy_score = 0;
 
         let rainbowGradient = [
             "#b00b0b",
@@ -251,9 +254,13 @@
                 songButton.on('pointerdown', function () {
                     songSelectScreen.visible = false;
                     playScreen.visible = true;
+                    scoreText.text = "0";
+                    comboText.text = "0 combos";
+                    playing_accuracyText.text = "0%"
                     speed = songDict[i].rank;
                     startTime = new Date().getTime();
                     timeDistance = songDict[i] * 1000;
+                    accuracy_score = 0;
                     score = 0;
                     combo = 0;
                     maxCombo = 0;
@@ -280,7 +287,7 @@
                             setTimeout(function () {
                                 isEnd = false;
                                 songText.text = songDict[i].name;
-                                accuracy = ((perfectTap * 100 + goodTap * 70 + badTap * 10) / note_num).toFixed(2);
+                                
                                 if (accuracy === 100) gradeText.text = "SSS";
                                 else if (accuracy >= 98) gradeText.text = "SS";
                                 else if (accuracy >= 95) gradeText.text = "S";
@@ -289,7 +296,7 @@
                                 else if (accuracy >= 70) gradeText.text = "C";
                                 else if (accuracy >= 50) gradeText.text = "D";
                                 else gradeText.text = "F";
-                                accuracyText.text = "accuracy " + accuracy + "%"
+                                accuracyText.text = "accuracy " + accuracy + "%";
                                 maxComboText.text = "Max Combo : " + maxCombo + "combo";
                                 resultScoreText.text = "score : " + score;
                                 perfectTapText.text = perfectTap + " perfect";
@@ -374,6 +381,11 @@
             comboText.x = appX + appWidth * 0.5;
             comboText.y = appY + appHeight * 0.25;
             playScreen.addChild(comboText);
+
+            playing_accuracyText = new PIXI.Text("0%");
+            playing_accuracyText.x = appX + appWidth * 0.85;
+            playing_accuracyText.y = appY + appHeight * 0.05;
+            playScreen.addChild(playing_accuracyText);
 
             hitTextS = new PIXI.Text();
             hitTextS.anchor.set(0.5);
@@ -575,7 +587,7 @@
             }
             ticker_count += 1;
             //generate note
-            if (ticker_count % speed === 0 && ticker_count > 500 && !isEnd) {
+            if (ticker_count % Math.floor(100 / speed) === 0 && ticker_count > 500 && !isEnd) {
                 let rand = Math.floor(Math.random() * Math.floor(4));
                 let type_rand = Math.floor(Math.random() * Math.floor(10));
                 if (type_rand >= 1) {
@@ -742,6 +754,9 @@
                         noteAvailiable[3] = true;
                     }
                 }
+                bringToFront(scoreText);
+                bringToFront(comboText);
+                bringToFront(playing_accuracyText);
                 bringToFront(top_layer);
                 bringToFront(ground_layer);
             }
@@ -1055,6 +1070,9 @@
             text.text = "PERFECT";
             text.visible = true;
             text.style.fontSize = 10;
+            accuracy_score += 100;
+            accuracy = (accuracy_score / note_num).toFixed(2);
+            playing_accuracyText.text = accuracy + "%";
         }
 
         function good(text) {
@@ -1064,6 +1082,9 @@
             text.text = "GOOD";
             text.visible = true;
             text.style.fontSize = 10;
+            accuracy_score += 70;
+            accuracy = (accuracy_score / note_num).toFixed(2);
+            playing_accuracyText.text = accuracy + "%";
         }
 
         function bad(text) {
@@ -1073,6 +1094,9 @@
             text.text = "BAD";
             text.visible = true;
             text.style.fontSize = 10;
+            accuracy_score += 10;
+            accuracy = (accuracy_score / note_num).toFixed(2);
+            playing_accuracyText.text = accuracy + "%";
         }
 
         function miss(text) {
