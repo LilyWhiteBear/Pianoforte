@@ -12,7 +12,8 @@
         let app;
         let keys = {};
         let speed = 8;
-        let ticker = 0;
+        let ticker_count = 0;
+        let foschan_ticker = 0;
         let isEnd = false;
         var startTime;
         var timeDistance = 0;
@@ -20,6 +21,9 @@
         var windowWidth = window.screen.width;
         var appHeight;
         var appWidth;
+        var playTime = 1;
+
+        var cheatMode = true;
 
         var songDict = [{
             name: 'VIVID WORLD',
@@ -34,18 +38,15 @@
             rank: 8
         }]
 
-        let combo = 0;
-        let score = 0;
-        let maxCombo = 0;
-        let note_num = 0;
-        let performancePlay = [];
-
         let comboText;
         let scoreText;
         let hitTextS;
         let hitTextD;
         let hitTextK;
         let hitTextL;
+
+        let foschan1;
+        let foschan2;
 
         let textureSButton;
         let textureDButton;
@@ -87,6 +88,32 @@
         let noteType = [0, 0, 0, 0];
         let noteAvailiable = [false, false, false, false];
         let performanceGraph;
+        let perfromanceGraphProp = {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0
+        }
+
+        let combo = 0;
+        let score = 0;
+        let maxCombo = 0;
+        let note_num = 0;
+        let performancePlay = [];
+        let perfectTap = 0;
+        let goodTap = 0;
+        let badTap = 0;
+        let missTap = 0;
+
+        let rainbowGradient = [
+            "#b00b0b",
+            "#cf601d",
+            "#eef30a",
+            "#0c7e39",
+            "#1ea2b0",
+            "#0404bd",
+            "#6f136c"
+        ];
 
         let top_layer;
         let ground_layer;
@@ -111,6 +138,11 @@
         var appX = windowWidth / 2 - (appWidth / 2);
         var appY = windowHeight / 2 - (appHeight / 2);
 
+        perfromanceGraphProp.x = appX + appWidth * 0.2;
+        perfromanceGraphProp.y = appY + appHeight * 0.5;
+        perfromanceGraphProp.width = appWidth * 0.7;
+        perfromanceGraphProp.height = appHeight * 0.2;
+
         window.onload = function () {
             app = new PIXI.Application(
                 {
@@ -121,7 +153,7 @@
                 }
             );
             document.body.appendChild(app.view);
-          
+
             background = new PIXI.Graphics();
             background.beginFill(0xAAAAAA);
             background.drawRect(appX, appY, appWidth, appHeight);
@@ -142,19 +174,40 @@
             playScreen.visible = false;
             resultScreen.visible = false;
 
+            let ticker = new PIXI.Ticker();
+            ticker.autoStart = true;
+            ticker.add(gameLoop);
+
             //title screen 
             let titleText = new PIXI.Text("Pianoforte");
             titleText.anchor.set(0.5);
             titleText.x = appX + (appWidth * 0.5);
-            titleText.y = appY + (appHeight * 0.3);
+            titleText.y = appY + (appHeight * 0.15);
             titleScreen.addChild(titleText);
+
+            foschan1 = new PIXI.Sprite.from("images/foschan1.png");
+            foschan1.width = appWidth * 0.6;
+            foschan1.height = appHeight * 0.5;
+            foschan1.anchor.set(0.5);
+            foschan1.x = appX + appWidth * 0.5;
+            foschan1.y = appY + appHeight * 0.5;
+            titleScreen.addChild(foschan1);
+
+            foschan2 = new PIXI.Sprite.from("images/foschan2.png");
+            foschan2.width = appWidth * 0.6;
+            foschan2.height = appHeight * 0.5;
+            foschan2.anchor.set(0.5);
+            foschan2.x = appX + appWidth * 0.5;
+            foschan2.y = appY + appHeight * 0.5;
+            titleScreen.addChild(foschan2);
+            foschan2.visible = false;
 
             let startButton = new PIXI.Sprite.from("images/button.png");
             startButton.width = appWidth * 0.3;
             startButton.height = appHeight * 0.1;
             startButton.anchor.set(0.5);
             startButton.x = appX + appWidth * 0.5;
-            startButton.y = appY + appHeight * 0.7;
+            startButton.y = appY + appHeight * 0.85;
             startButton.interactive = true;
             startButton.buttonMode = true;
             startButton.on('pointerdown', function () {
@@ -173,37 +226,46 @@
             let songContainer = new PIXI.Container();
             songSelectScreen.addChild(songContainer);
 
-            for(let i in songDict){
+            for (let i in songDict) {
                 let songButton = new PIXI.Container();
                 songSelectScreen.addChild(songButton);
                 let songButtonBG = new PIXI.Graphics();
-                if(songDict[i].rank >= 15) songButtonBG.beginFill(0xda0000);
-                else if(songDict[i].rank >= 10) songButtonBG.beginFill(0xFF5733);  
-                else if(songDict[i].rank >= 5) songButtonBG.beginFill(0xFFC300); 
-                else songButtonBG.beginFill(0x006d33); 
+                if (songDict[i].rank >= 15) songButtonBG.beginFill(0xda0000);
+                else if (songDict[i].rank >= 10) songButtonBG.beginFill(0xFF5733);
+                else if (songDict[i].rank >= 5) songButtonBG.beginFill(0xFFC300);
+                else songButtonBG.beginFill(0x006d33);
                 songButtonBG.drawRect(appX, appY + appHeight * 0.075 + (i * 0.05 * appHeight), appWidth, appHeight * 0.05);
                 songButton.addChild(songButtonBG);
-                let songName = new PIXI.Text(songDict[i].name);   
+                let songName = new PIXI.Text(songDict[i].name);
                 songName.anchor.set(0.5);
                 songName.x = appX + appWidth * 0.4;
                 songName.y = appY + appHeight * 0.1 + (i * 0.05 * appHeight);
                 songButton.addChild(songName);
-                let songDifficult = new PIXI.Text(songDict[i].rank);   
+                let songDifficult = new PIXI.Text(songDict[i].rank);
                 songDifficult.anchor.set(0.5);
                 songDifficult.x = appX + appWidth * 0.9;
                 songDifficult.y = appY + appHeight * 0.1 + (i * 0.05 * appHeight);
                 songButton.addChild(songDifficult);
                 songButton.interactive = true;
-                songButton.buttonMode = true;  
+                songButton.buttonMode = true;
                 songButton.on('pointerdown', function () {
                     songSelectScreen.visible = false;
                     playScreen.visible = true;
                     speed = songDict[i].rank;
                     startTime = new Date().getTime();
                     timeDistance = songDict[i] * 1000;
+                    score = 0;
+                    combo = 0;
+                    maxCombo = 0;
+                    ticker_count = 0;
                     note_num = 0;
+                    perfectTap = 0;
+                    goodTap = 0;
+                    badTap = 0;
+                    missTap = 0;
+                    playTime--;
                     performancePlay = [];
-                    app.ticker.add(gameLoop);
+                    ticker.start();
                     //song
                     let song = new PIXI.sound.Sound.from({
                         url: songDict[i].path,
@@ -211,34 +273,50 @@
                         volume: 0.1,
                         complete: function () {
                             isEnd = true;
-                            setTimeout(function() {
-                                if(combo === note_num)  perfectText.visible = true;
-                            }, 500);
-                            setTimeout(function() { 
+                            setTimeout(function () {
+                                if (combo === note_num) perfectText.visible = true;
+                                ticker.stop();
+                            }, 5000);
+                            setTimeout(function () {
                                 isEnd = false;
+                                songText.text = songDict[i].name;
+                                accuracy = ((perfectTap * 100 + goodTap * 70 + badTap * 10) / note_num).toFixed(2);
+                                if (accuracy === 100) gradeText.text = "SSS";
+                                else if (accuracy >= 98) gradeText.text = "SS";
+                                else if (accuracy >= 95) gradeText.text = "S";
+                                else if (accuracy >= 90) gradeText.text = "A";
+                                else if (accuracy >= 80) gradeText.text = "B";
+                                else if (accuracy >= 70) gradeText.text = "C";
+                                else if (accuracy >= 50) gradeText.text = "D";
+                                else gradeText.text = "F";
+                                accuracyText.text = "accuracy " + accuracy + "%"
                                 maxComboText.text = "Max Combo : " + maxCombo + "combo";
                                 resultScoreText.text = "score : " + score;
+                                perfectTapText.text = perfectTap + " perfect";
+                                goodTapText.text = goodTap + " good";
+                                badTapText.text = badTap + " bad";
+                                missTapText.text = missTap + " miss";
                                 perfectText.visible = false;
                                 playScreen.visible = false;
                                 resultScreen.visible = true;
-                                let graphX = appX + appWidth * 0.2;
-                                let graphY = appY + appHeight * 0.5;
-                                let graphWidth = appWidth * 0.7;
-                                let graphHeight = appHeight * 0.2;
-                                for(let i in performancePlay){
+                                let graphX = perfromanceGraphProp.x;
+                                let graphY = perfromanceGraphProp.y;
+                                let graphWidth = perfromanceGraphProp.width;
+                                let graphHeight = perfromanceGraphProp.height;
+                                for (let i in performancePlay) {
                                     let candle = new PIXI.Graphics();
-                                    if(i != 0 && performancePlay[i] >= performancePlay[i-1])
-                                        candle.beginFill(0x1ca700);
-                                    else candle.beginFill(0xDC143C);
+                                    if (i != 0 && performancePlay[i] < performancePlay[i - 1])
+                                        candle.beginFill(0xDC143C);
+                                    else candle.beginFill(0x1ca700);
                                     let drawX = graphX + (((i + 1) / note_num) / 10 * graphWidth);
                                     let drawY = graphY + ((3 - performancePlay[i]) / 4) * graphHeight;
                                     candle.drawRect(drawX, drawY, graphWidth / note_num, graphHeight / 4);
                                     resultScreen.addChild(candle);
                                 }
-                            }, 5000);
+                            }, 8000);
                         }
                     });
-                }); 
+                });
             }
 
 
@@ -325,7 +403,7 @@
             perfectText.anchor.set(0.5);
             perfectText.x = appX + appWidth * 0.5;
             perfectText.y = appY + appHeight * 0.3;
-            perfectText.style.fontSize = 50;
+            perfectText.style.fontSize = 30;
             playScreen.addChild(perfectText);
 
             hitTextS.visible = false;
@@ -335,6 +413,31 @@
             perfectText.visible = false;
 
             //result screen
+
+            let songText = new PIXI.Text("untiltled");
+            songText.fontWeight = "bold";
+            songText.x = appX + appWidth * 0.1;
+            songText.y = appY + appHeight * 0.05;
+            resultScreen.addChild(songText);
+
+            let accuracyText = new PIXI.Text("accuracy 0%");
+            accuracyText.x = appX + appWidth * 0.1;
+            accuracyText.y = appY + appHeight * 0.1;
+            resultScreen.addChild(accuracyText);
+
+            let gradeTextStyle = new PIXI.TextStyle({
+                fill: rainbowGradient,
+                fillGradientType: 1,
+                fontFamily: "Comic Sans MS",
+                fontSize: 50,
+                fontWeight: "bold"
+            });
+            let gradeText = new PIXI.Text("F", gradeTextStyle);
+            gradeText.anchor.set(0.5);
+            gradeText.x = appX + appWidth * 0.8;
+            gradeText.y = appY + appHeight * 0.1;
+            resultScreen.addChild(gradeText);
+
             let maxComboText = new PIXI.Text("0 combos");
             maxComboText.anchor.set(0.5);
             maxComboText.x = appX + appWidth * 0.5;
@@ -347,42 +450,61 @@
             resultScoreText.y = appY + appHeight * 0.2;
             resultScreen.addChild(resultScoreText);
 
+            let perfectTapText = new PIXI.Text("perfect");
+            perfectTapText.x = appX + appWidth * 0.1;
+            perfectTapText.y = appY + appHeight * 0.3;
+            resultScreen.addChild(perfectTapText);
+
+            let goodTapText = new PIXI.Text("good");
+            goodTapText.x = appX + appWidth * 0.6;
+            goodTapText.y = appY + appHeight * 0.3;
+            resultScreen.addChild(goodTapText);
+
+            let badTapText = new PIXI.Text("bad");
+            badTapText.x = appX + appWidth * 0.1;
+            badTapText.y = appY + appHeight * 0.35;
+            resultScreen.addChild(badTapText);
+
+            let missTapText = new PIXI.Text("miss");
+            missTapText.x = appX + appWidth * 0.6;
+            missTapText.y = appY + appHeight * 0.35;
+            resultScreen.addChild(missTapText);
+
             let permormanceText = new PIXI.Text("Performance Graph");
-            permormanceText.anchor.set(0.5);
-            permormanceText.x = appX + appWidth * 0.4;
-            permormanceText.y = appY + appHeight * 0.35;
+            permormanceText.x = appX + appWidth * 0.1;
+            permormanceText.y = perfromanceGraphProp.y - (appHeight * 0.1);
             resultScreen.addChild(permormanceText);
 
             performanceGraph = new PIXI.Graphics();
             performanceGraph.beginFill(0xFFFFFF);
-            performanceGraph.drawRect(appX + appWidth * 0.2, appY + appHeight * 0.5, appWidth * 0.7, appHeight * 0.2);
+            performanceGraph.drawRect(perfromanceGraphProp.x, perfromanceGraphProp.y, perfromanceGraphProp.width, perfromanceGraphProp.height);
             resultScreen.addChild(performanceGraph);
 
             let perfectPText = new PIXI.Text("PERFECT");
             perfectPText.anchor.set(0.5);
             perfectPText.x = appX + appWidth * 0.1;
-            perfectPText.y = appY + appHeight * 0.54;
+            perfectPText.y = perfromanceGraphProp.y + (perfromanceGraphProp.height / 5);
             perfectPText.style.fontSize = 8;
             resultScreen.addChild(perfectPText);
 
             let goodText = new PIXI.Text("GOOD");
             goodText.anchor.set(0.5);
             goodText.x = appX + appWidth * 0.1;
-            goodText.y = appY + appHeight * 0.58;
+            goodText.y = perfromanceGraphProp.y + (perfromanceGraphProp.height * 2 / 5);
             goodText.style.fontSize = 8;
             resultScreen.addChild(goodText);
 
             let badText = new PIXI.Text("BAD");
             badText.anchor.set(0.5);
             badText.x = appX + appWidth * 0.1;
-            badText.y = appY + appHeight * 0.62;
+            badText.y = perfromanceGraphProp.y + (perfromanceGraphProp.height * 3 / 5);
             badText.style.fontSize = 8;
             resultScreen.addChild(badText);
 
             let missText = new PIXI.Text("MISS");
             missText.anchor.set(0.5);
             missText.x = appX + appWidth * 0.1;
-            missText.y = appY + appHeight * 0.66;
+            missText.y = perfromanceGraphProp.y + (perfromanceGraphProp.height * 4 / 5);
             missText.style.fontSize = 8;
             resultScreen.addChild(missText);
 
@@ -391,12 +513,13 @@
             restartButton.height = appHeight * 0.1;
             restartButton.anchor.set(0.5);
             restartButton.x = appX + appWidth * 0.5;
-            restartButton.y = appY + appHeight * 0.85;
+            restartButton.y = appY + appHeight * 0.9;
             restartButton.interactive = true;
             restartButton.buttonMode = true;
             restartButton.on('pointerdown', function () {
                 resultScreen.visible = false;
-                songSelectScreen.visible = true;
+                titleScreen.visible = true;
+                if(playTime <= 0) startButton.enable = false;
             });
             resultScreen.addChild(restartButton);
 
@@ -410,7 +533,7 @@
             ground_layer.beginFill(0xffffff);
             ground_layer.drawRect(0, appY + appHeight, windowWidth, windowHeight - appY - appHeight);
             playScreen.addChild(ground_layer);
-            
+
 
             for (let i = 1; i <= 3; i++) {
                 let seperater = new PIXI.Graphics();
@@ -436,9 +559,23 @@
         }
 
         function gameLoop() {
-            ticker += 1;
+            if (titleScreen.visible) {
+                foschan_ticker += 1;
+                if (foschan_ticker % 50 === 0) {
+                    if (foschan1.visible) {
+                        foschan1.visible = false;
+                        foschan2.visible = true;
+                    }
+                    else if (foschan2.visible) {
+                        foschan1.visible = true;
+                        foschan2.visible = false;
+                    }
+                }
+                return;
+            }
+            ticker_count += 1;
             //generate note
-            if (ticker % speed === 0 && ticker > 500 && !isEnd) {
+            if (ticker_count % speed === 0 && ticker_count > 500 && !isEnd) {
                 let rand = Math.floor(Math.random() * Math.floor(4));
                 let type_rand = Math.floor(Math.random() * Math.floor(10));
                 if (type_rand >= 1) {
@@ -472,14 +609,14 @@
                     }
                 }
                 else {
-                    if(rand === 0 && noteType[0] === 0){
+                    if (rand === 0 && noteType[0] === 0) {
                         let long_rand = Math.floor(Math.random() * Math.floor(3)) + 2;
                         noteS = new PIXI.Container();
 
                         noteS_start = new PIXI.Graphics();
                         noteS_start.beginFill(0x016e31);
                         noteS_start.drawCircle(appX + appWidth * 0.125, appY + appHeight * -0.125, appWidth * 0.125);
-                        
+
                         noteS_body = new PIXI.Graphics();
                         noteS_body.beginFill(0x016e31);
                         noteS_body.drawRect(appX, appY + (appHeight * -0.125) - (appHeight * 0.1 * long_rand), appWidth * 0.25, appHeight * 0.1 * long_rand);
@@ -498,21 +635,21 @@
 
                         noteS.addChild(noteS_body);
                         noteS.addChild(noteS_start);
-                        noteS.addChild(noteS_sign);                       
+                        noteS.addChild(noteS_sign);
                         noteS.addChild(noteS_end);
                         noteS.addChild(noteS_sign_end);
                         playScreen.addChild(noteS);
                         noteType[0] = 2;
                         noteAvailiable[0] = true;
                     }
-                    else if(rand === 1 && noteType[1] === 0){
+                    else if (rand === 1 && noteType[1] === 0) {
                         let long_rand = Math.floor(Math.random() * Math.floor(3)) + 2;
                         noteD = new PIXI.Container();
 
                         noteD_start = new PIXI.Graphics();
                         noteD_start.beginFill(0x016e31);
                         noteD_start.drawCircle(appX + appWidth * 0.375, appY + appHeight * -0.125, appWidth * 0.125);
-                     
+
                         noteD_body = new PIXI.Graphics();
                         noteD_body.beginFill(0x016e31);
                         noteD_body.drawRect(appX + appWidth * 0.25, appY + (appHeight * -0.125) - (appHeight * 0.1 * long_rand), appWidth * 0.25, appHeight * 0.1 * long_rand);
@@ -538,14 +675,14 @@
                         noteType[1] = 2;
                         noteAvailiable[1] = true;
                     }
-                    else if(rand === 2 && noteType[2] === 0){
+                    else if (rand === 2 && noteType[2] === 0) {
                         let long_rand = Math.floor(Math.random() * Math.floor(3)) + 2;
                         noteK = new PIXI.Container();
 
                         noteK_start = new PIXI.Graphics();
                         noteK_start.beginFill(0x016e31);
                         noteK_start.drawCircle(appX + appWidth * 0.625, appY + appHeight * -0.125, appWidth * 0.125);
-                       
+
                         noteK_body = new PIXI.Graphics();
                         noteK_body.beginFill(0x016e31);
                         noteK_body.drawRect(appX + appWidth * 0.5, appY + (appHeight * -0.125) - (appHeight * 0.1 * long_rand), appWidth * 0.25, appHeight * 0.1 * long_rand);
@@ -571,14 +708,14 @@
                         noteType[2] = 2;
                         noteAvailiable[2] = true;
                     }
-                    else if(rand === 3 && noteType[3] === 0){
+                    else if (rand === 3 && noteType[3] === 0) {
                         let long_rand = Math.floor(Math.random() * Math.floor(3)) + 2;
                         noteL = new PIXI.Container();
 
                         noteL_start = new PIXI.Graphics();
                         noteL_start.beginFill(0x016e31);
                         noteL_start.drawCircle(appX + appWidth * 0.875, appY + appHeight * -0.125, appWidth * 0.125);
-                        
+
                         noteL_body = new PIXI.Graphics();
                         noteL_body.beginFill(0x016e31);
                         noteL_body.drawRect(appX + appWidth * 0.75, appY + (appHeight * -0.125) - (appHeight * 0.1 * long_rand), appWidth * 0.25, appHeight * 0.1 * long_rand);
@@ -611,8 +748,17 @@
 
             //move note
             for (let i = 0; i < 4; i++) {
-                if (noteType[i] === 1) {
+                if (noteType[i] === 0 && cheatMode) {
+                    if (i === 0) keys["83"] = false;
+                    else if (i === 1) keys["68"] = false;
+                    else if (i === 2) keys["75"] = false;
+                    else if (i === 3) keys["76"] = false;
+                }
+                else if (noteType[i] === 1) {
                     if (i === 0) {
+                        if (cheatMode && isPerfect(SButton, noteS)) {
+                            keys["83"] = true;
+                        }
                         if (noteS.y < appY + appHeight) noteS.y += Math.ceil(speed * (appHeight / 800));
                         else {
                             combo = 0;
@@ -620,11 +766,12 @@
                             playScreen.removeChild(noteS);
                             noteType[0] = 0;
                             miss(hitTextS);
-                            performancePlay.push(0);
-                            note_num += 1;
                         }
                     }
                     else if (i === 1) {
+                        if (cheatMode && isPerfect(DButton, noteD)) {
+                            keys["68"] = true;
+                        }
                         if (noteD.y < appY + appHeight) noteD.y += Math.ceil(speed * (appHeight / 800));
                         else {
                             combo = 0;
@@ -632,11 +779,12 @@
                             playScreen.removeChild(noteD);
                             noteType[1] = 0;
                             miss(hitTextD);
-                            performancePlay.push(0);
-                            note_num += 1;
                         }
                     }
                     else if (i === 2) {
+                        if (cheatMode && isPerfect(KButton, noteK)) {
+                            keys["75"] = true;
+                        }
                         if (noteK.y < appY + appHeight) noteK.y += Math.ceil(speed * (appHeight / 800));
                         else {
                             combo = 0;
@@ -644,11 +792,12 @@
                             playScreen.removeChild(noteK);
                             noteType[2] = 0;
                             miss(hitTextK);
-                            performancePlay.push(0);
-                            note_num += 1;
                         }
                     }
                     else if (i === 3) {
+                        if (cheatMode && isPerfect(LButton, noteL)) {
+                            keys["76"] = true;
+                        }
                         if (noteL.y < appY + appHeight) noteL.y += Math.ceil(speed * (appHeight / 800));
                         else {
                             combo = 0;
@@ -656,68 +805,95 @@
                             playScreen.removeChild(noteL);
                             noteType[3] = 0;
                             miss(hitTextL);
-                            performancePlay.push(0);
-                            note_num += 1;
                         }
                     }
                 }
-                else if(noteType[i] === 2){
+                else if (noteType[i] === 2) {
                     if (i === 0) {
+                        if (cheatMode && isPerfect(SButton, noteS_start)) {
+                            keys["83"] = true;
+                        }
+                        else if (cheatMode && isPerfect(SButton, noteS_end)) {
+                            keys["83"] = false;
+                        }
+                        else if (cheatMode && isIntersect(SButton, noteS_body) && !isPerfect(SButton, noteS_end)) {
+                            keys["83"] = true;
+                        }
                         if ((noteS.y > appY + appHeight && noteAvailiable[i] === true) ||
-                        noteS.y > appY + appHeight + noteS.height && noteAvailiable[i] === false){
+                            noteS.y > appY + appHeight + noteS.height && noteAvailiable[i] === false) {
                             combo = 0;
                             comboText.text = combo + " combos";
                             playScreen.removeChild(noteS);
                             noteType[0] = 0;
                             miss(hitTextS);
-                            performancePlay.push(0);
-                            note_num += 1;
-                        } 
+                        }
                         else {
                             noteS.y += Math.ceil(speed * (appHeight / 800));
                         }
                     }
                     else if (i === 1) {
+                        if (cheatMode && isPerfect(DButton, noteD_start)) {
+                            keys["68"] = true;
+                        }
+                        else if (cheatMode && isPerfect(DButton, noteD_end)) {
+                            keys["68"] = false;
+                        }
+                        else if (cheatMode && isIntersect(DButton, noteD_body) && !isPerfect(DButton, noteD_end)) {
+                            keys["68"] = true;
+                        }
+
                         if ((noteD.y > appY + appHeight && noteAvailiable[i] === true) ||
-                        noteD.y > appY + appHeight + noteD.height && noteAvailiable[i] === false){
+                            noteD.y > appY + appHeight + noteD.height && noteAvailiable[i] === false) {
                             combo = 0;
                             comboText.text = combo + " combos";
                             playScreen.removeChild(noteD);
                             noteType[1] = 0;
                             miss(hitTextD);
-                            performancePlay.push(0);
-                            note_num += 1;
-                        } 
+                        }
                         else {
                             noteD.y += Math.ceil(speed * (appHeight / 800));
                         }
                     }
                     else if (i === 2) {
+                        if (cheatMode && isPerfect(KButton, noteK_start)) {
+                            keys["75"] = true;
+                        }
+                        else if (cheatMode && isPerfect(KButton, noteK_end)) {
+                            keys["75"] = false;
+                        }
+                        else if (cheatMode && isIntersect(KButton, noteK_body) && !isPerfect(KButton, noteK_end)) {
+                            keys["75"] = true;
+                        }
                         if ((noteK.y > appY + appHeight && noteAvailiable[i] === true) ||
-                        noteK.y > appY + appHeight + noteK.height && noteAvailiable[i] === false){
+                            noteK.y > appY + appHeight + noteK.height && noteAvailiable[i] === false) {
                             combo = 0;
                             comboText.text = combo + " combos";
                             playScreen.removeChild(noteK);
                             noteType[2] = 0;
                             miss(hitTextK);
-                            performancePlay.push(0);
-                            note_num += 1;
-                        } 
+                        }
                         else {
                             noteK.y += Math.ceil(speed * (appHeight / 800));
                         }
                     }
                     else if (i === 3) {
+                        if (cheatMode && isPerfect(LButton, noteL_start)) {
+                            keys["76"] = true;
+                        }
+                        else if (cheatMode && isPerfect(LButton, noteL_end)) {
+                            keys["76"] = false;
+                        }
+                        else if (cheatMode && isIntersect(LButton, noteL_body) && !isPerfect(LButton, noteL_end)) {
+                            keys["76"] = true;
+                        }
                         if ((noteL.y > appY + appHeight && noteAvailiable[i] === true) ||
-                        noteL.y > appY + appHeight + noteL.height && noteAvailiable[i] === false){
+                            noteL.y > appY + appHeight + noteL.height && noteAvailiable[i] === false) {
                             combo = 0;
                             comboText.text = combo + " combos";
                             playScreen.removeChild(noteL);
                             noteType[3] = 0;
                             miss(hitTextL);
-                            performancePlay.push(0);
-                            note_num += 1;
-                        } 
+                        }
                         else {
                             noteL.y += Math.ceil(speed * (appHeight / 800));
                         }
@@ -775,8 +951,6 @@
                 playScreen.removeChild(note);
                 noteType[channel] = 0;
                 perfect(text);
-                performancePlay.push(3);
-                note_num += 1;
             }
             else if (noteType[channel] === 1 && isIntersect(button, note)) {
                 combo += 1;
@@ -787,8 +961,6 @@
                 playScreen.removeChild(note);
                 noteType[channel] = 0;
                 good(text);
-                performancePlay.push(2);
-                note_num += 1;
             }
             else if (noteType[channel] === 1 && note.y >= appWidth * 0.7) {
                 combo = 0;
@@ -796,29 +968,25 @@
                 playScreen.removeChild(note);
                 noteType[channel] = 0;
                 bad(text);
-                performancePlay.push(1);
-                note_num += 1;
             }
-            else if (noteType[channel] === 2 && isPerfect(button, note) && noteAvailiable[channel] === true) {
+            // else if (noteType[channel] === 2 && isPerfect(button, note_start) && noteAvailiable[channel] === true) {
+            //     combo += 1;
+            //     if (combo > maxCombo) maxCombo = combo;
+            //     score += (250 + combo * 5);
+            //     comboText.text = combo + " combos";
+            //     scoreText.text = score.toString();
+            //     noteAvailiable[channel] = false;
+            //     perfect(text);
+            // }
+            else if (noteType[channel] === 2 && isIntersect(button, note_start) && noteAvailiable[channel] === true) {
                 combo += 1;
                 if (combo > maxCombo) maxCombo = combo;
                 score += (250 + combo * 5);
                 comboText.text = combo + " combos";
                 scoreText.text = score.toString();
                 noteAvailiable[channel] = false;
+                // good(text);
                 perfect(text);
-                performancePlay.push(3);
-                note_num += 1;
-            }
-            else if (noteType[channel] === 2 && isIntersect(button, note) && noteAvailiable[channel] === true) {
-                combo += 1;
-                if (combo > maxCombo) maxCombo = combo;
-                score += (250 + combo * 5);
-                comboText.text = combo + " combos";
-                scoreText.text = score.toString();
-                noteAvailiable[channel] = false;
-                good(text);performancePlay.push(2);
-                note_num += 1;
             }
             else if (noteType[channel] === 2 && note_start.y >= appWidth * 0.7 && noteAvailiable[channel] === true) {
                 combo = 0;
@@ -827,23 +995,19 @@
                 noteType[channel] = 0;
                 noteAvailiable[channel] = false;
                 bad(text);
-                performancePlay.push(1);
-                note_num += 1;
             }
         }
 
-        function isReleaseScore(channel, button, note, note_end, text){
-            if(noteType[channel] === 2){
-                if(!isIntersect(button, note_end) && noteAvailiable[channel] === false){
+        function isReleaseScore(channel, button, note, note_end, text) {
+            if (noteType[channel] === 2) {
+                if (!isIntersect(button, note_end) && noteAvailiable[channel] === false) {
                     combo = 0;
                     comboText.text = "0 combos";
                     playScreen.removeChild(note);
                     noteType[channel] = 0;
                     bad(text);
-                    performancePlay.push(1);
-                    note_num += 1;
                 }
-                else if(isPerfect(button, note_end) && noteAvailiable[channel] === false){
+                else if (isPerfect(button, note_end) && noteAvailiable[channel] === false) {
                     combo += 1;
                     if (combo > maxCombo) maxCombo = combo;
                     score += (600 + combo * 5);
@@ -852,10 +1016,8 @@
                     playScreen.removeChild(note);
                     noteType[channel] = 0;
                     perfect(text);
-                    performancePlay.push(3);
-                    note_num += 1;
                 }
-                else if(isIntersect(button, note_end) && noteAvailiable[channel] === false){
+                else if (isIntersect(button, note_end) && noteAvailiable[channel] === false) {
                     combo += 1;
                     if (combo > maxCombo) maxCombo = combo;
                     score += (500 + combo * 5);
@@ -864,8 +1026,6 @@
                     playScreen.removeChild(note);
                     noteType[channel] = 0;
                     good(text);
-                    performancePlay.push(2);
-                    note_num += 1;
                 }
             }
         }
@@ -881,50 +1041,62 @@
 
         function isPerfect(a, b) {
             let aBox = a.getBounds();
-            let bBox = b.getBounds(); 
+            let bBox = b.getBounds();
             return aBox.y + aBox.height > bBox.y &&
                 aBox.y < bBox.y + bBox.height &&
                 aBox.y + aBox.height >= bBox.y + (bBox.height * 0.7) &&
-                aBox.y + aBox.height <= bBox.y + (bBox.height * 1.3); 
+                aBox.y + aBox.height <= bBox.y + (bBox.height * 1.3);
         }
 
-        function perfect(text){
+        function perfect(text) {
+            performancePlay.push(3);
+            perfectTap += 1;
+            note_num += 1;
             text.text = "PERFECT";
             text.visible = true;
             text.style.fontSize = 10;
         }
 
-        function good(text){
+        function good(text) {
+            performancePlay.push(2);
+            goodTap += 1;
+            note_num += 1;
             text.text = "GOOD";
             text.visible = true;
             text.style.fontSize = 10;
         }
 
-        function bad(text){
+        function bad(text) {
+            performancePlay.push(1);
+            badTap += 1;
+            note_num += 1;
             text.text = "BAD";
             text.visible = true;
             text.style.fontSize = 10;
         }
 
-        function miss(text){
+        function miss(text) {
+            performancePlay.push(0);
+            missTap += 1;
+            note_num += 1;
             text.text = "MISS";
             text.visible = true;
             text.style.fontSize = 10;
         }
 
-        function tickHitOrMiss(text){
-            if(text.visible === true){
+        function tickHitOrMiss(text) {
+            if (text.visible === true) {
                 bringToFront(text);
-                if(text.style.fontSize < 30){
+                if (text.style.fontSize < 30) {
                     text.style.fontSize += 1;
                 }
-                else{
+                else {
                     text.visible = false;
                 }
             }
         }
 
-        function bringToFront(layer){
+        function bringToFront(layer) {
             playScreen.removeChild(layer);
             playScreen.addChild(layer);
         }
