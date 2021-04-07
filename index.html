@@ -23,13 +23,37 @@
         var appWidth;
         var playTime = 1;
 
-        var cheatMode = true;
+        var cheatMode = false;
 
         var songDict = [{
+            name: 'POWER SPOT',
+            path: 'sounds/POWER_SPOT!!.ogg',
+            time: 237,
+            rank: 20
+        },
+        {
+            name: 'MIRACLE WAVE',
+            path: 'sounds/MIRACLE_WAVE.ogg',
+            time: 252,
+            rank: 18
+        },
+        {
             name: 'VIVID WORLD',
             path: 'sounds/VIVID WORLD (short ver.).mp3',
             time: 98,
             rank: 15
+        },
+        {
+            name: 'START DASH',
+            path: 'sounds/Start-Dash!!.ogg',
+            time: 257,
+            rank: 13
+        },
+        {
+            name: 'ANGELIC ANGEL',
+            path: 'sounds/Angelic_Angel.ogg',
+            time: 109,
+            rank: 7
         },
         {
             name: 'PURE PHRASE',
@@ -177,8 +201,12 @@
             playScreen.visible = false;
             resultScreen.visible = false;
 
+            let ticker_fos = new PIXI.Ticker();
+            ticker_fos.autoStart = true;
+            ticker_fos.add(foschanLoop);
+
             let ticker = new PIXI.Ticker();
-            ticker.autoStart = true;
+            ticker.autoStart = false;
             ticker.add(gameLoop);
 
             //title screen 
@@ -344,6 +372,17 @@
             SButton.anchor.set(0.5);
             SButton.x = appX + appWidth * 0.125;
             SButton.y = appY + appHeight * 0.925;
+            SButton.interactive = true;
+            SButton.buttonMode = true;
+            SButton.on('pointerdown', function () {
+                keys['83'] = true;
+            });
+            SButton.on('pointerup', function () {
+                keys['83'] = false;
+            });
+            SButton.on('pointerout', function () {
+                keys['83'] = false;
+            });
             playScreen.addChild(SButton);
 
             DButton = new PIXI.Sprite(textureDButton);
@@ -352,6 +391,17 @@
             DButton.anchor.set(0.5);
             DButton.x = appX + appWidth * 0.375;
             DButton.y = appY + appHeight * 0.925;
+            DButton.interactive = true;
+            DButton.buttonMode = true;
+            DButton.on('pointerdown', function () {
+                keys['68'] = true;
+            });
+            DButton.on('pointerup', function () {
+                keys['68'] = false;
+            });
+            DButton.on('pointerout', function () {
+                keys['68'] = false;
+            });
             playScreen.addChild(DButton);
 
             KButton = new PIXI.Sprite(textureKButton);
@@ -360,6 +410,17 @@
             KButton.anchor.set(0.5);
             KButton.x = appX + appWidth * 0.625;
             KButton.y = appY + appHeight * 0.925;
+            KButton.interactive = true;
+            KButton.buttonMode = true;
+            KButton.on('pointerdown', function () {
+                keys['75'] = true;
+            });
+            KButton.on('pointerup', function () {
+                keys['75'] = false;
+            });
+            KButton.on('pointerout', function () {
+                keys['75'] = false;
+            });
             playScreen.addChild(KButton);
 
             LButton = new PIXI.Sprite(textureLButton);
@@ -368,6 +429,17 @@
             LButton.anchor.set(0.5);
             LButton.x = appX + appWidth * 0.875;
             LButton.y = appY + appHeight * 0.925;
+            LButton.interactive = true;
+            LButton.buttonMode = true;
+            LButton.on('pointerdown', function () {
+                keys['76'] = true;
+            });
+            LButton.on('pointerup', function () {
+                keys['76'] = false;
+            });
+            LButton.on('pointerout', function () {
+                keys['76'] = false;
+            });
             playScreen.addChild(LButton);
 
             scoreText = new PIXI.Text("0");
@@ -383,7 +455,7 @@
             playScreen.addChild(comboText);
 
             playing_accuracyText = new PIXI.Text("0%");
-            playing_accuracyText.x = appX + appWidth * 0.85;
+            playing_accuracyText.x = appX + appWidth * 0.75;
             playing_accuracyText.y = appY + appHeight * 0.05;
             playScreen.addChild(playing_accuracyText);
 
@@ -558,8 +630,6 @@
             window.addEventListener("keydown", keysDown);
             window.addEventListener("keyup", keysUp);
 
-            tick = document.querySelector("#tick");
-
         }
 
         function keysDown(e) {
@@ -570,7 +640,7 @@
             keys[e.keyCode] = false;
         }
 
-        function gameLoop() {
+        function foschanLoop() {
             if (titleScreen.visible) {
                 foschan_ticker += 1;
                 if (foschan_ticker % 50 === 0) {
@@ -583,8 +653,11 @@
                         foschan2.visible = false;
                     }
                 }
-                return;
             }
+        }
+
+        function gameLoop() {
+            
             ticker_count += 1;
             //generate note
             if (ticker_count % Math.floor(100 / speed) === 0 && ticker_count > 500 && !isEnd) {
