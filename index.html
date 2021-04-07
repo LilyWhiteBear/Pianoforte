@@ -1076,7 +1076,7 @@
                 // good(text);
                 perfect(text);
             }
-            else if (noteType[channel] === 2 && note_start.y >= appWidth * 0.7 && noteAvailiable[channel] === true) {
+            else if (noteType[channel] === 2 && !isIntersect(button, note_start) && noteAvailiable[channel] === true) {
                 combo = 0;
                 comboText.text = "0 combos";
                 playScreen.removeChild(note);
@@ -1167,7 +1167,7 @@
             text.text = "BAD";
             text.visible = true;
             text.style.fontSize = 10;
-            accuracy_score += 10;
+            accuracy_score += 0;
             accuracy = (accuracy_score / note_num).toFixed(2);
             playing_accuracyText.text = accuracy + "%";
         }
