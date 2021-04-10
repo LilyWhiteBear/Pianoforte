@@ -2,6 +2,6 @@
     "python.pythonPath": "C:\\Program Files\\Python36\\python.exe",
     "staticWebApps.appSubpath": "/",
     "staticWebApps.apiSubpath": "",
-    "staticWebApps.outputSubpath": "",
+    "staticWebApps.outputSubpath": "./",
     "liveServer.settings.port": 5501
 }
