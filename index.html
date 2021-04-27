@@ -10,168 +10,8 @@
     <script src="js/pixi-sound.js"></script>
     <script src="js/gameFunction/script.js"></script>
     <script src="js/gameFunction/ticker.js"></script>
+    <script src="js/gameFunction/variables.js"></script>
     <script>
-        let app;
-        let keys = {};
-        let speed = 8;
-        let volumn = 10;
-        let ticker_count = 0;
-        let foschan_ticker = 0;
-        let isEnd = false;
-        var startTime;
-        var timeDistance = 0;
-        var windowHeight = window.screen.height;
-        var windowWidth = window.screen.width;
-        var appHeight;
-        var appWidth;
-        var playTime = 1;
-
-        var cheatMode = false;
-
-        var songDict = [{
-            name: 'POWER SPOT',
-            path: 'sounds/POWER_SPOT!!.ogg',
-            time: "3:57",
-        },
-        {
-            name: 'MIRACLE WAVE',
-            path: 'sounds/MIRACLE_WAVE.ogg',
-            time: "4:12",
-        },
-        {
-            name: 'VIVID WORLD',
-            path: 'sounds/VIVID WORLD (short ver.).mp3',
-            time: "1:38",
-        },
-        {
-            name: 'START DASH',
-            path: 'sounds/Start-Dash!!.ogg',
-            time: "4:17",
-        },
-        {
-            name: 'ANGELIC ANGEL',
-            path: 'sounds/Angelic_Angel.mp3',
-            time: "1:49",
-        },
-        {
-            name: 'PURE PHRASE',
-            path: 'sounds/09._PURE_PHRASE.ogg',
-            time: "5:10",
-        }]
-
-        let comboText;
-        let scoreText;
-        let playing_accuracyText;
-        let hitTextS;
-        let hitTextD;
-        let hitTextK;
-        let hitTextL;
-
-        let foschan1;
-        let foschan2;
-
-        let textureSButton;
-        let textureDButton;
-        let textureKButton;
-        let textureLButton;
-        let texture_pressedSButton;
-        let texture_pressedDButton;
-        let texture_pressedKButton;
-        let texture_pressedLButton;
-        let SButton;
-        let DButton;
-        let KButton;
-        let LButton;
-        let noteS;
-        let noteD;
-        let noteK;
-        let noteL;
-
-        let noteS_start;
-        let noteS_sign;
-        let noteS_body;
-        let noteS_end;
-        let noteS_sign_end;
-        let noteD_start;
-        let noteD_sign;
-        let noteD_body;
-        let noteD_end;
-        let noteD_sign_end;
-        let noteK_start;
-        let noteK_sign;
-        let noteK_body;
-        let noteK_end;
-        let noteK_sign_end;
-        let noteL_start;
-        let noteL_sign;
-        let noteL_body;
-        let noteL_end;
-        let noteL_sign_end;
-        let noteType = [0, 0, 0, 0];
-        let noteAvailiable = [false, false, false, false];
-        let performanceGraph;
-        let perfromanceGraphProp = {
-            x: 0,
-            y: 0,
-            height: 0,
-            width: 0
-        }
-
-        let combo = 0;
-        let score = 0;
-        let maxCombo = 0;
-        let note_num = 0;
-        let performancePlay = [];
-        let perfectTap = 0;
-        let goodTap = 0;
-        let badTap = 0;
-        let missTap = 0;
-        let accuracy = 0;
-        let accuracy_score = 0;
-        let candleArray = [];
-
-        let rainbowGradient = [
-            "#b00b0b",
-            "#cf601d",
-            "#eef30a",
-            "#0c7e39",
-            "#1ea2b0",
-            "#0404bd",
-            "#6f136c"
-        ];
-
-        const Headerstyle = new PIXI.TextStyle({
-            fontSize: 50,
-            fontWeight: "bolder"
-        });
-
-        let top_layer;
-        let ground_layer;
-
-        if (windowHeight >= 1000 && windowWidth >= 500) {
-            appHeight = 800;
-            appWidth = 400;
-        }
-        else if (windowHeight >= 1000 && windowWidth < 500) {
-            appHeight = windowWidth * 1.6;
-            appWidth = windowWidth * 0.8;
-        }
-        else if (windowHeight < 1000 && windowWidth >= 500) {
-            appHeight = windowHeight * 0.8;
-            appWidth = windowHeight * 0.4;
-        }
-        else {
-            appHeight = windowHeight * 0.8;
-            appWidth = windowWidth * 0.8;
-        }
-
-        var appX = windowWidth / 2 - (appWidth / 2);
-        var appY = windowHeight / 2 - (appHeight / 2);
-
-        perfromanceGraphProp.x = appX + appWidth * 0.2;
-        perfromanceGraphProp.y = appY + appHeight * 0.5;
-        perfromanceGraphProp.width = appWidth * 0.7;
-        perfromanceGraphProp.height = appHeight * 0.2;
 
         window.onload = function () {
             app = new PIXI.Application(
@@ -190,16 +30,22 @@
             app.stage.addChild(background);
 
             titleScreen = new PIXI.Container();
+            tutorialScreen = new PIXI.Container();
+            gachaScreen = new PIXI.Container();
             songSelectScreen = new PIXI.Container();
             playScreen = new PIXI.Container();
             resultScreen = new PIXI.Container();
 
             app.stage.addChild(titleScreen);
+            app.stage.addChild(tutorialScreen);
+            app.stage.addChild(gachaScreen);
             app.stage.addChild(songSelectScreen);
             app.stage.addChild(playScreen);
             app.stage.addChild(resultScreen);
 
             titleScreen.visible = true;
+            tutorialScreen.visible = false;
+            gachaScreen.visible = false;
             songSelectScreen.visible = false;
             playScreen.visible = false;
             resultScreen.visible = false;
@@ -213,30 +59,92 @@
             ticker.add(gameLoop);
 
             //title screen 
-            let titleText = new PIXI.Text("Pianoforte");
-            adjObj(titleText, titleScreen, appX + (appWidth * 0.5), appY + (appHeight * 0.15), false, 0.5);
+            let normalTicketText = new PIXI.Text("x" + tokenDict.normal_ticket);
+            adjObj(normalTicketText, titleScreen, appX + appWidth * 0.9, appY + appHeight * 0.01, false);
 
-            foschan1 = new PIXI.Sprite.from("images/foschan1.png");
-            adjSprite(foschan1, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.5, appWidth * 0.6, appHeight * 0.5, false, 0.5);
+            let normalTicketImage = new PIXI.Sprite.from("images/token/normal_ticket.png");
+            adjSprite(normalTicketImage, titleScreen, appX + appWidth * 0.75, appY, appWidth * 0.1, appHeight * 0.05, false);
 
-            foschan2 = new PIXI.Sprite.from("images/foschan2.png");
-            adjSprite(foschan2, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.5, appWidth * 0.6, appHeight * 0.5, false, 0.5);
+            let premiemTicketText = new PIXI.Text("x" + tokenDict.normal_ticket);
+            adjObj(premiemTicketText, titleScreen, appX + appWidth * 0.9, appY + appHeight * 0.06, false);
+
+            let premiemTicketImage = new PIXI.Sprite.from("images/token/premiem_ticket.png");
+            adjSprite(premiemTicketImage, titleScreen, appX + appWidth * 0.75, appY + appHeight * 0.05, appWidth * 0.1, appHeight * 0.05, false);
+
+            let titleText = new PIXI.Text("Pianoforte", Headerstyle);
+            adjObj(titleText, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.15, false, 0.5);
+
+            foschan1 = new PIXI.Sprite.from("images/char/foschan1.png");
+            adjSprite(foschan1, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.45, appWidth * 0.6, appHeight * 0.5, false, 0.5);
+
+            foschan2 = new PIXI.Sprite.from("images/char/foschan2.png");
+            adjSprite(foschan2, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.45, appWidth * 0.6, appHeight * 0.5, false, 0.5);
             foschan2.visible = false;
 
-            let startButton = new PIXI.Sprite.from("images/button.png");
-            adjSprite(startButton, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.85, appWidth * 0.3, appHeight * 0.1, true, 0.5);
+            let startButton = new PIXI.Text("START", Headerstyle);
+            adjObj(startButton, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.7, true, 0.5);
             startButton.on('pointerdown', function () {
                 titleScreen.visible = false;
                 songSelectScreen.visible = true;
             });
-            titleScreen.addChild(startButton);
+
+            let tutorialButton = new PIXI.Text("TUTORIAL", Menustyle2);
+            adjObj(tutorialButton, titleScreen, appX + appWidth * 0.5, appY + appHeight * 0.8, true, 0.5);
+            tutorialButton.on('pointerdown', function () {
+                interactiveSwitch(titleScreen, false);
+                tutorialScreen.visible = true;
+            });
+
+            let gachaButton = new PIXI.Sprite.from("images/button/gacha.png");
+            adjSprite(gachaButton, titleScreen, appX + appWidth * 0.35, appY + appHeight * 0.9, appWidth * 0.15, appWidth * 0.15, true, 0.5);
+            gachaButton.on('pointerdown', function () {
+                titleScreen.visible = false;
+                gachaScreen.visible = true;
+            });
+            titleScreen.addChild(gachaButton);
+
+            //tutorial screen
+
+
+            //gacha screen
+            let boss_coinText = new PIXI.Text("x" + tokenDict.boss_coin);
+            adjObj(boss_coinText, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.01, false);
+
+            let boss_coinImage = new PIXI.Sprite.from("images/token/boss_coin.png");
+            adjSprite(boss_coinImage, gachaScreen, appX + appWidth * 0.6, appY, appWidth * 0.1, appHeight * 0.05, false);
+
+            let chonlasit_coinText = new PIXI.Text("x" + tokenDict.chonlasit_coin);
+            adjObj(chonlasit_coinText, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.06, false);
+
+            let chonlasit_coinImage = new PIXI.Sprite.from("images/token/chonlasit_coin.png");
+            adjSprite(chonlasit_coinImage, gachaScreen, appX + appWidth * 0.6, appY + appHeight * 0.05, appWidth * 0.1, appHeight * 0.05, false);
+
+            let esc_text = new PIXI.Text("BACK", Menustyle);
+            adjObj(esc_text, gachaScreen, appX, appY, true);
+            esc_text.on('pointerdown', function () {
+                titleScreen.visible = true;
+                gachaScreen.visible = false;
+            });
+
+            let gachaPlayx1 = new PIXI.Sprite.from("/images/button/gachaPlay1.png");
+            adjSprite(gachaPlayx1, gachaScreen, appX + appWidth * 0.25, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
+
+            let gachaPlayx10 = new PIXI.Sprite.from("/images/button/gachaPlay10.png");
+            adjSprite(gachaPlayx10, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
 
             //song select screen
-            let songSelectText = new PIXI.Text("Select song");
-            adjObj(songSelectText, songSelectScreen, appX + appWidth * 0.25, appY + appHeight * 0.05, false, 0.5);
+            let backButton = new PIXI.Text("BACK", Menustyle);
+            adjObj(backButton, songSelectScreen, appX, appY, true);
+            backButton.on('pointerdown', function () {
+                songSelectScreen.visible = false;
+                titleScreen.visible = true;
+            });
 
-            let settingButton = new PIXI.Sprite.from("images/setting_button.png");
-            adjSprite(settingButton, songSelectScreen, appX + appWidth * 0.85, appY + appHeight * 0.05, appWidth * 0.15, appWidth * 0.15, true, 0.5);
+            let songSelectText = new PIXI.Text("Select song", Headerstyle);
+            adjObj(songSelectText, songSelectScreen, appX + appWidth * 0.02, appY + appHeight * 0.07, false);
+
+            let settingButton = new PIXI.Sprite.from("images/button/setting_button.png");
+            adjSprite(settingButton, songSelectScreen, appX + appWidth * 0.85, appY, appWidth * 0.15, appWidth * 0.15, true);
             settingButton.on('pointerdown', function () {
                 songSelectScreen.visible = false;
 
@@ -353,14 +261,14 @@
                 let songButtonBG = new PIXI.Graphics();
                 if (i % 2 === 0) songButtonBG.beginFill(0xeaeaea);
                 else songButtonBG.beginFill(0xc6e2ff);
-                songButtonBG.drawRect(appX, appY + appHeight * 0.1 + (i * 0.05 * appHeight), appWidth, appHeight * 0.05);
+                songButtonBG.drawRect(appX, appY + appHeight * 0.15 + (i * 0.05 * appHeight), appWidth, appHeight * 0.05);
                 songButton.addChild(songButtonBG);
 
                 let songName = new PIXI.Text(songDict[i].name);
-                adjObj(songName, songButton, appX + appWidth * 0.4, appY + appHeight * 0.125 + (i * 0.05 * appHeight), false, 0.5);
+                adjObj(songName, songButton, appX + appWidth * 0.4, appY + appHeight * 0.175 + (i * 0.05 * appHeight), false, 0.5);
 
                 let songTime = new PIXI.Text(songDict[i].time);
-                adjObj(songTime, songButton, appX + appWidth * 0.9, appY + appHeight * 0.125 + (i * 0.05 * appHeight), false, 0.5);
+                adjObj(songTime, songButton, appX + appWidth * 0.9, appY + appHeight * 0.175 + (i * 0.05 * appHeight), false, 0.5);
 
                 songButton.interactive = true;
                 songButton.buttonMode = true;
@@ -409,10 +317,32 @@
                     let speedModifyConfirm = new PIXI.Text(speed);
                     adjObj(speedModifyConfirm, confirmSpeedScreen, appX + appWidth * 0.72, appY + appHeight * 0.47, true, 0.5);
 
-                    let playButtonAC = new PIXI.Sprite.from("/images/button.png");
-                    adjObj(playButtonAC, confirmSpeedScreen, appX + appWidth * 0.5, appY + appHeight * 0.6, true, 0.5);
-                    playButtonAC.on('pointerdown', function () {
-                        songSelectScreen.removeChild(playButtonAC);
+                    let playButtonNormal = new PIXI.Sprite.from("/images/button/button.png");
+                    adjObj(playButtonNormal, confirmSpeedScreen, appX + appWidth * 0.3, appY + appHeight * 0.6, true, 0.5);
+                    if (tokenDict.normal_ticket <= 0) playButtonNormal.interactive = false;
+                    playButtonNormal.on('pointerdown', function () { gameStart(1); });
+
+                    let playButtonPremiem = new PIXI.Sprite.from("/images/button/button.png");
+                    adjObj(playButtonPremiem, confirmSpeedScreen, appX + appWidth * 0.7, appY + appHeight * 0.6, true, 0.5);
+                    if (tokenDict.premiem_ticket <= 0) playButtonPremiem.interactive = false;
+                    playButtonPremiem.on('pointerdown', function () { gameStart(5); });
+
+                    function gameStart(modifier) {
+                        if (modifier === 1 && tokenDict.normal_ticket > 0) {
+                            tokenDict.normal_ticket -= 1;
+                            normalTicketText.text = "x" + tokenDict.normal_ticket;
+                        }
+                        else if (modifier === 5 && tokenDict.premiem_ticket > 0) {
+                            tokenDict.premiem_ticket -= 1;
+                            premiemTicketText.text = "x" + tokenDict.premiem_ticket;
+                        }
+                        else {
+                            console.log('error');
+                            return;
+                        }
+
+                        interactiveSwitch(songSelectScreen, true);
+
                         songSelectScreen.removeChild(confirmSpeedScreen);
                         songSelectScreen.visible = false;
                         playScreen.visible = true;
@@ -431,7 +361,6 @@
                         goodTap = 0;
                         badTap = 0;
                         missTap = 0;
-                        playTime--;
                         performancePlay = [];
                         while (candleArray.length > 0) {
                             resultScreen.removeChild(candleArray[0]);
@@ -439,7 +368,7 @@
                         }
                         ticker.start();
                         //song
-                        let song = new PIXI.sound.Sound.from({
+                        song = new PIXI.sound.Sound.from({
                             url: songDict[i].path,
                             autoPlay: true,
                             volume: volumn / 10,
@@ -488,23 +417,124 @@
                                     }
                                 }, 8000);
                             }
-                        });
-                    })
-
+                        }
+                        )
+                    }
                 });
             }
 
 
             //play screen
-            textureSButton = PIXI.Texture.from("images/S.png");
-            textureDButton = PIXI.Texture.from("images/D.png");
-            textureKButton = PIXI.Texture.from("images/K.png");
-            textureLButton = PIXI.Texture.from("images/L.png");
+            pauseButton = new PIXI.Sprite.from("images/button/pause.png");
+            adjSprite(pauseButton, playScreen, appX, appY, appWidth * 0.08, appWidth * 0.08, true);
+            pauseButton.on('pointerdown', function () {
+                interactiveSwitch(playScreen, false);
+                song.pause();
+                ticker.stop();
 
-            texture_pressedSButton = PIXI.Texture.from("images/S_pressed.png");
-            texture_pressedDButton = PIXI.Texture.from("images/D_pressed.png");
-            texture_pressedKButton = PIXI.Texture.from("images/K_pressed.png");
-            texture_pressedLButton = PIXI.Texture.from("images/L_pressed.png");
+                //pause screen
+                let pauseScreen = new PIXI.Container();
+                playScreen.addChild(pauseScreen);
+
+                let pauseBorder = new PIXI.Graphics();
+                pauseBorder.beginFill(0x000000);
+                pauseBorder.drawRect(appX + appWidth * 0.195, appY + appHeight * 0.345, appWidth * 0.61, appHeight * 0.26);
+                pauseScreen.addChild(pauseBorder);
+
+                let pauseBG = new PIXI.Graphics();
+                pauseBG.beginFill(0x74CCF4);
+                pauseBG.drawRect(appX + appWidth * 0.2, appY + appHeight * 0.35, appWidth * 0.6, appHeight * 0.25);
+                pauseScreen.addChild(pauseBG);
+
+                let pauseText = new PIXI.Text("PAUSE", Menustyle2);
+                adjObj(pauseText, pauseScreen, appX + appWidth * 0.5, appY + appHeight * 0.4, false, 0.5);
+                pauseScreen.addChild(pauseText);
+
+                let resumeBorder = new PIXI.Graphics();
+                resumeBorder.beginFill(0x000000);
+                resumeBorder.drawRect(appX + appWidth * 0.255, appY + appHeight * 0.475, appWidth * 0.23, appHeight * 0.07);
+                pauseScreen.addChild(resumeBorder);
+
+                let resumeButton = new PIXI.Graphics();
+                resumeButton.beginFill(0xffffff);
+                resumeButton.drawRect(appX + appWidth * 0.26, appY + appHeight * 0.48, appWidth * 0.22, appHeight * 0.06);
+                resumeButton.interactive = true;
+                resumeButton.buttonMode = true;
+                resumeButton.on('pointerdown', function () {
+                    interactiveSwitch(playScreen, true);
+                    song.resume();
+                    ticker.start();
+                    playScreen.removeChild(pauseScreen);
+                });
+                pauseScreen.addChild(resumeButton);
+
+                let resumeText = new PIXI.Text("resume");
+                adjObj(resumeText, resumeButton, appX + appWidth * 0.37, appY + appHeight * 0.5, false, 0.5);
+
+                let exitBorder = new PIXI.Graphics();
+                exitBorder.beginFill(0x000000);
+                exitBorder.drawRect(appX + appWidth * 0.515, appY + appHeight * 0.475, appWidth * 0.23, appHeight * 0.07);
+                pauseScreen.addChild(exitBorder);
+
+                let exitButton = new PIXI.Graphics();
+                exitButton.beginFill(0xffffff);
+                exitButton.drawRect(appX + appWidth * 0.52, appY + appHeight * 0.48, appWidth * 0.22, appHeight * 0.06);
+                exitButton.interactive = true;
+                exitButton.buttonMode = true;
+                exitButton.on('pointerdown', function () {
+                    interactiveSwitch(pauseScreen, false);
+
+                    //confirmExit screen
+                    let confirmExitScreen = new PIXI.Container();
+                    pauseScreen.addChild(confirmExitScreen);
+
+                    let confirmExitBorder = new PIXI.Graphics();
+                    confirmExitBorder.beginFill(0x000000);
+                    confirmExitBorder.drawRect(appX + appWidth * 0.2, appY + appHeight * 0.375, appWidth * 0.6, appHeight * 0.2);
+                    confirmExitScreen.addChild(confirmExitBorder);
+
+                    let confirmExitBG = new PIXI.Graphics();
+                    confirmExitBG.beginFill(0x74CCF4);
+                    confirmExitBG.drawRect(appX + appWidth * 0.205, appY + appHeight * 0.38, appWidth * 0.59, appHeight * 0.19);
+                    confirmExitScreen.addChild(confirmExitBG);
+
+                    let confirmExitText = new PIXI.Text("Will you exit?", Menustyle2);
+                    adjObj(confirmExitText, confirmExitScreen, appX + appWidth * 0.5, appY + appHeight * 0.45, false, 0.5);
+                    confirmExitScreen.addChild(confirmExitText);
+
+                    let yesText = new PIXI.Text("yes", Dangerstyle);
+                    adjObj(yesText, confirmExitScreen, appX + appWidth * 0.4, appY + appHeight * 0.5, true, 0.5);
+                    yesText.on('pointerdown', function() {
+                        interactiveSwitch(playScreen, true);
+                        clearPlayScreen();
+                        playScreen.removeChild(pauseScreen);
+                        playScreen.visible = false;
+                        titleScreen.visible = true;
+                    });
+
+                    let noText = new PIXI.Text("no", Menustyle2);
+                    adjObj(noText, confirmExitScreen, appX + appWidth * 0.6, appY + appHeight * 0.5, true, 0.5);
+                    noText.on('pointerdown', function() {
+                        interactiveSwitch(pauseScreen, true);
+                        pauseScreen.removeChild(confirmExitScreen);
+                    });
+                });
+                pauseScreen.addChild(exitButton);
+
+                let exitText = new PIXI.Text("exit");
+                adjObj(exitText, exitButton, appX + appWidth * 0.62, appY + appHeight * 0.5, false, 0.5);
+
+            });
+
+            textureSButton = PIXI.Texture.from("images/button/S.png");
+            textureDButton = PIXI.Texture.from("images/button/D.png");
+            textureKButton = PIXI.Texture.from("images/button/K.png");
+            textureLButton = PIXI.Texture.from("images/button/L.png");
+
+            texture_pressedSButton = PIXI.Texture.from("images/button/S_pressed.png");
+            texture_pressedDButton = PIXI.Texture.from("images/button/D_pressed.png");
+            texture_pressedKButton = PIXI.Texture.from("images/button/K_pressed.png");
+            texture_pressedLButton = PIXI.Texture.from("images/button/L_pressed.png");
 
             SButton = new PIXI.Sprite(textureSButton);
             adjSprite(SButton, playScreen, appX + appWidth * 0.125, appY + appHeight * 0.925, appWidth * 0.25, appHeight * 0.15, true, 0.5);
@@ -586,7 +616,6 @@
             perfectText.visible = false;
 
             //result screen
-
             let songText = new PIXI.Text("untiltled");
             songText.fontWeight = "bold";
             adjObj(songText, resultScreen, appX + appWidth * 0.1, appY + appHeight * 0.05, false);
@@ -644,15 +673,15 @@
             badText.style.fontSize = 8;
 
             let missText = new PIXI.Text("MISS");
-            adjObj(missText, resultScreen, appX + appWidth * 0.1, perfromanceGraphProp.y + (perfromanceGraphProp.height * 4 / 5), false, 0.5);          
+            adjObj(missText, resultScreen, appX + appWidth * 0.1, perfromanceGraphProp.y + (perfromanceGraphProp.height * 4 / 5), false, 0.5);
             missText.style.fontSize = 8;
 
-            let restartButton = new PIXI.Sprite.from("images/button.png");
+            let restartButton = new PIXI.Sprite.from("images/button/button.png");
             adjSprite(restartButton, resultScreen, appX + appWidth * 0.5, appY + appHeight * 0.9, appWidth * 0.3, appHeight * 0.1, true, 0.5);
             restartButton.on('pointerdown', function () {
                 resultScreen.visible = false;
                 titleScreen.visible = true;
-                if (playTime <= 0) startButton.enable = false;
+                if (tokenDict.normal_ticket <= 0 && tokenDict.premiem_ticket <= 0) startButton.interactive = false;
             });
 
             //invisible layer

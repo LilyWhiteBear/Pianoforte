@@ -119,7 +119,24 @@ function changePage() {
 }
 
 function interactiveSwitch(screen, switchs) {
-    screen.children.forEach(childObj => {
-        childObj.interactive = switchs;
-    });
+  screen.children.forEach((childObj) => {
+    childObj.interactive = switchs;
+  });
+}
+
+function clearPlayScreen() {
+    if(noteType[0] === 1 || noteType[0] === 2){
+      playScreen.removeChild(noteS);
+    }
+    if(noteType[1] === 1 || noteType[1] === 2){
+      playScreen.removeChild(noteD);
+    }
+    if(noteType[2] === 1 || noteType[2] === 2){
+      playScreen.removeChild(noteK);
+    }
+    if(noteType[3] === 1 || noteType[3] === 2){
+      playScreen.removeChild(noteL);
+    }
+  noteType = [0, 0, 0, 0];
+  noteAvailiable = [false, false, false, false];
 }
