@@ -24,6 +24,13 @@
             );
             document.body.appendChild(app.view);
 
+            let textureBG = new PIXI.Texture.from(getTokenValue("hill", "path"));
+
+            leftBG = new PIXI.Sprite(textureBG);
+            adjSprite(leftBG, app.stage, -appX, appY, appX * 2, appHeight, false);
+            rightBG = new PIXI.Sprite(textureBG);
+            adjSprite(rightBG, app.stage, appX + appWidth, appY, appX * 2, appHeight, false);
+
             background = new PIXI.Graphics();
             background.beginFill(0xAAAAAA);
             background.drawRect(appX, appY, appWidth, appHeight);
@@ -32,6 +39,8 @@
             titleScreen = new PIXI.Container();
             tutorialScreen = new PIXI.Container();
             gachaScreen = new PIXI.Container();
+            gachaEffectScreen = new PIXI.Container();
+            inventoryScreen = new PIXI.Container();
             songSelectScreen = new PIXI.Container();
             playScreen = new PIXI.Container();
             resultScreen = new PIXI.Container();
@@ -39,6 +48,8 @@
             app.stage.addChild(titleScreen);
             app.stage.addChild(tutorialScreen);
             app.stage.addChild(gachaScreen);
+            app.stage.addChild(gachaEffectScreen);
+            app.stage.addChild(inventoryScreen);
             app.stage.addChild(songSelectScreen);
             app.stage.addChild(playScreen);
             app.stage.addChild(resultScreen);
@@ -46,6 +57,8 @@
             titleScreen.visible = true;
             tutorialScreen.visible = false;
             gachaScreen.visible = false;
+            gachaEffectScreen.visible = false;
+            inventoryScreen.visible = false;
             songSelectScreen.visible = false;
             playScreen.visible = false;
             resultScreen.visible = false;
@@ -59,16 +72,16 @@
             ticker.add(gameLoop);
 
             //title screen 
-            let normalTicketText = new PIXI.Text("x" + tokenDict.normal_ticket);
+            let normalTicketText = new PIXI.Text("x" + getTokenValue("normal ticket", "in_stock"), Detailstyle);
             adjObj(normalTicketText, titleScreen, appX + appWidth * 0.9, appY + appHeight * 0.01, false);
 
-            let normalTicketImage = new PIXI.Sprite.from("images/token/normal_ticket.png");
+            let normalTicketImage = new PIXI.Sprite.from(getTokenValue("normal ticket", "path"));
             adjSprite(normalTicketImage, titleScreen, appX + appWidth * 0.75, appY, appWidth * 0.1, appHeight * 0.05, false);
 
-            let premiemTicketText = new PIXI.Text("x" + tokenDict.normal_ticket);
+            let premiemTicketText = new PIXI.Text("x" + getTokenValue("premiem ticket", "in_stock"), Detailstyle);
             adjObj(premiemTicketText, titleScreen, appX + appWidth * 0.9, appY + appHeight * 0.06, false);
 
-            let premiemTicketImage = new PIXI.Sprite.from("images/token/premiem_ticket.png");
+            let premiemTicketImage = new PIXI.Sprite.from(getTokenValue("premiem ticket", "path"));
             adjSprite(premiemTicketImage, titleScreen, appX + appWidth * 0.75, appY + appHeight * 0.05, appWidth * 0.1, appHeight * 0.05, false);
 
             let titleText = new PIXI.Text("Pianoforte", Headerstyle);
@@ -103,20 +116,30 @@
             });
             titleScreen.addChild(gachaButton);
 
+            let inventoryButton = new PIXI.Sprite.from("images/button/inventory.png");
+            adjSprite(inventoryButton, titleScreen, appX + appWidth * 0.65, appY + appHeight * 0.9, appWidth * 0.15, appWidth * 0.15, true, 0.5);
+            inventoryButton.on('pointerdown', function () {
+                titleScreen.visible = false;
+                inventoryScreen.visible = true;
+                //inventory screen
+                updateInventoryScreen(); 
+            });
+            titleScreen.addChild(inventoryButton);
+
             //tutorial screen
 
 
             //gacha screen
-            let boss_coinText = new PIXI.Text("x" + tokenDict.boss_coin);
+            let boss_coinText = new PIXI.Text("x" + getTokenValue("Boss coin", "in_stock"), Detailstyle);
             adjObj(boss_coinText, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.01, false);
 
-            let boss_coinImage = new PIXI.Sprite.from("images/token/boss_coin.png");
+            let boss_coinImage = new PIXI.Sprite.from(getTokenValue("Boss coin", "path"));
             adjSprite(boss_coinImage, gachaScreen, appX + appWidth * 0.6, appY, appWidth * 0.1, appHeight * 0.05, false);
 
-            let chonlasit_coinText = new PIXI.Text("x" + tokenDict.chonlasit_coin);
+            let chonlasit_coinText = new PIXI.Text("x" + getTokenValue("Chonlasit coin", "in_stock"), Detailstyle);
             adjObj(chonlasit_coinText, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.06, false);
 
-            let chonlasit_coinImage = new PIXI.Sprite.from("images/token/chonlasit_coin.png");
+            let chonlasit_coinImage = new PIXI.Sprite.from(getTokenValue("Chonlasit coin", "path"));
             adjSprite(chonlasit_coinImage, gachaScreen, appX + appWidth * 0.6, appY + appHeight * 0.05, appWidth * 0.1, appHeight * 0.05, false);
 
             let esc_text = new PIXI.Text("BACK", Menustyle);
@@ -131,6 +154,10 @@
 
             let gachaPlayx10 = new PIXI.Sprite.from("/images/button/gachaPlay10.png");
             adjSprite(gachaPlayx10, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
+
+
+            //gacha effect screen
+
 
             //song select screen
             let backButton = new PIXI.Text("BACK", Menustyle);
@@ -162,10 +189,10 @@
                     songSelectScreen.visible = true;
                 });
 
-                let volumnText = new PIXI.Text("Volumn");
+                let volumnText = new PIXI.Text("Volumn", Menustyle2);
                 adjObj(volumnText, settingContainer, appX + appWidth * 0.05, appY + appHeight * 0.15, false);
 
-                let volumnDecrease = new PIXI.Text("-");
+                let volumnDecrease = new PIXI.Text("-", Menustyle2);
                 adjObj(volumnDecrease, settingContainer, appX + appWidth * 0.6, appY + appHeight * 0.15, true);
                 volumnDecrease.on('pointerdown', function () {
                     if (volumn >= 5) {
@@ -179,7 +206,7 @@
                     }
                 });
 
-                let volumnIncrease = new PIXI.Text("+");
+                let volumnIncrease = new PIXI.Text("+", Menustyle2);
                 adjObj(volumnIncrease, settingContainer, appX + appWidth * 0.8, appY + appHeight * 0.15, true);
                 volumnIncrease.on('pointerdown', function () {
                     if (volumn <= 95) {
@@ -193,13 +220,13 @@
                     }
                 });
 
-                let volumnModify = new PIXI.Text(volumn);
+                let volumnModify = new PIXI.Text(volumn, Menustyle2);
                 adjObj(volumnModify, settingContainer, appX + appWidth * 0.72, appY + appHeight * 0.17, false, 0.5);
 
-                let speedText = new PIXI.Text("NoteSpeed");
+                let speedText = new PIXI.Text("NoteSpeed", Menustyle2);
                 adjObj(speedText, settingContainer, appX + appWidth * 0.05, appY + appHeight * 0.25, false);
 
-                let speedDecrease = new PIXI.Text("-");
+                let speedDecrease = new PIXI.Text("-", Menustyle2);
                 adjObj(speedDecrease, settingContainer, appX + appWidth * 0.6, appY + appHeight * 0.25, true);
                 speedDecrease.on('pointerdown', function () {
                     if (speed > 4) {
@@ -209,7 +236,7 @@
                     }
                 });
 
-                let speedIncrease = new PIXI.Text("+");
+                let speedIncrease = new PIXI.Text("+", Menustyle2);
                 adjObj(speedIncrease, settingContainer, appX + appWidth * 0.8, appY + appHeight * 0.25, true);
                 speedIncrease.on('pointerdown', function () {
                     if (speed < 20) {
@@ -219,13 +246,13 @@
                     }
                 });
 
-                let speedModify = new PIXI.Text(speed);
+                let speedModify = new PIXI.Text(speed, Menustyle2);
                 adjObj(speedModify, settingContainer, appX + appWidth * 0.72, appY + appHeight * 0.27, false, 0.5);
 
-                let rankDesc = new PIXI.Text("Difficulty");
+                let rankDesc = new PIXI.Text("Difficulty", Menustyle2);
                 adjObj(rankDesc, settingContainer, appX + appWidth * 0.05, appY + appHeight * 0.35, false);
 
-                let rankText = new PIXI.Text("");
+                let rankText = new PIXI.Text("", {fontSize: normalFontSize});
                 rankText.style.fontWeight = "bold";
                 adjObj(rankText, settingContainer, appX + appWidth * 0.72, appY + appHeight * 0.37, false, 0.5);
                 rankTextModify();
@@ -264,10 +291,10 @@
                 songButtonBG.drawRect(appX, appY + appHeight * 0.15 + (i * 0.05 * appHeight), appWidth, appHeight * 0.05);
                 songButton.addChild(songButtonBG);
 
-                let songName = new PIXI.Text(songDict[i].name);
+                let songName = new PIXI.Text(songDict[i].name, Menustyle2);
                 adjObj(songName, songButton, appX + appWidth * 0.4, appY + appHeight * 0.175 + (i * 0.05 * appHeight), false, 0.5);
 
-                let songTime = new PIXI.Text(songDict[i].time);
+                let songTime = new PIXI.Text(songDict[i].time, Menustyle2);
                 adjObj(songTime, songButton, appX + appWidth * 0.9, appY + appHeight * 0.175 + (i * 0.05 * appHeight), false, 0.5);
 
                 songButton.interactive = true;
@@ -291,10 +318,10 @@
                         interactiveSwitch(songSelectScreen, true);
                     });
 
-                    let speedTextConfirm = new PIXI.Text("NoteSpeed");
+                    let speedTextConfirm = new PIXI.Text("NoteSpeed", Menustyle2);
                     adjObj(speedTextConfirm, confirmSpeedScreen, appX + appWidth * 0.15, appY + appHeight * 0.45, false);
 
-                    let speedDecreaseConfirm = new PIXI.Text("-");
+                    let speedDecreaseConfirm = new PIXI.Text("-", Menustyle2);
                     adjObj(speedDecreaseConfirm, confirmSpeedScreen, appX + appWidth * 0.6, appY + appHeight * 0.45, true);
                     speedDecreaseConfirm.on('pointerdown', function () {
                         if (speed > 4) {
@@ -304,7 +331,7 @@
                         }
                     });
 
-                    let speedIncreaseConfirm = new PIXI.Text("+");
+                    let speedIncreaseConfirm = new PIXI.Text("+", Menustyle2);
                     adjObj(speedIncreaseConfirm, confirmSpeedScreen, appX + appWidth * 0.8, appY + appHeight * 0.45, true);
                     speedIncreaseConfirm.on('pointerdown', function () {
                         if (speed < 20) {
@@ -314,27 +341,28 @@
                         }
                     });
 
-                    let speedModifyConfirm = new PIXI.Text(speed);
+                    let speedModifyConfirm = new PIXI.Text(speed, Menustyle2);
                     adjObj(speedModifyConfirm, confirmSpeedScreen, appX + appWidth * 0.72, appY + appHeight * 0.47, true, 0.5);
 
                     let playButtonNormal = new PIXI.Sprite.from("/images/button/button.png");
                     adjObj(playButtonNormal, confirmSpeedScreen, appX + appWidth * 0.3, appY + appHeight * 0.6, true, 0.5);
-                    if (tokenDict.normal_ticket <= 0) playButtonNormal.interactive = false;
+                    if (getTokenValue("normal ticket", "in_stock") <= 0) playButtonNormal.interactive = false;
                     playButtonNormal.on('pointerdown', function () { gameStart(1); });
 
                     let playButtonPremiem = new PIXI.Sprite.from("/images/button/button.png");
                     adjObj(playButtonPremiem, confirmSpeedScreen, appX + appWidth * 0.7, appY + appHeight * 0.6, true, 0.5);
-                    if (tokenDict.premiem_ticket <= 0) playButtonPremiem.interactive = false;
+                    if (getTokenValue("premiem ticket", "in_stock") <= 0) playButtonPremiem.interactive = false;
                     playButtonPremiem.on('pointerdown', function () { gameStart(5); });
 
                     function gameStart(modifier) {
-                        if (modifier === 1 && tokenDict.normal_ticket > 0) {
-                            tokenDict.normal_ticket -= 1;
-                            normalTicketText.text = "x" + tokenDict.normal_ticket;
+                        console.log(getTokenValue("normal ticket", "in_stock") - 1);
+                        if (modifier === 1 && getTokenValue("normal ticket", "in_stock") > 0) {
+                            setTokenValue("normal ticket", "in_stock", getTokenValue("normal ticket", "in_stock") - 1);
+                            normalTicketText.text = "x" + getTokenValue("normal ticket", "in_stock");
                         }
-                        else if (modifier === 5 && tokenDict.premiem_ticket > 0) {
-                            tokenDict.premiem_ticket -= 1;
-                            premiemTicketText.text = "x" + tokenDict.premiem_ticket;
+                        else if (modifier === 5 && getTokenValue("premiem ticket", "in_stock") > 0) {
+                            setTokenValue("premiem ticket", "in_stock", getTokenValue("premiem ticket", "in_stock") - 1);
+                            premiemTicketText.text = "x" + getTokenValue("premiem ticket", "in_stock");
                         }
                         else {
                             console.log('error');
@@ -468,7 +496,7 @@
                 });
                 pauseScreen.addChild(resumeButton);
 
-                let resumeText = new PIXI.Text("resume");
+                let resumeText = new PIXI.Text("resume", Detailstyle);
                 adjObj(resumeText, resumeButton, appX + appWidth * 0.37, appY + appHeight * 0.5, false, 0.5);
 
                 let exitBorder = new PIXI.Graphics();
@@ -521,7 +549,7 @@
                 });
                 pauseScreen.addChild(exitButton);
 
-                let exitText = new PIXI.Text("exit");
+                let exitText = new PIXI.Text("exit", Detailstyle);
                 adjObj(exitText, exitButton, appX + appWidth * 0.62, appY + appHeight * 0.5, false, 0.5);
 
             });
@@ -584,13 +612,13 @@
                 keys['76'] = false;
             });
 
-            scoreText = new PIXI.Text("0");
+            scoreText = new PIXI.Text("0", Menustyle2);
             adjObj(scoreText, playScreen, appX + appWidth * 0.5, appY + appHeight * 0.2, false, 0.5);
 
-            comboText = new PIXI.Text("0 combos");
+            comboText = new PIXI.Text("0 combos", Menustyle2);
             adjObj(comboText, playScreen, appX + appWidth * 0.5, appY + appHeight * 0.25, false, 0.5);
 
-            playing_accuracyText = new PIXI.Text("0%");
+            playing_accuracyText = new PIXI.Text("0%", Menustyle2);
             adjObj(playing_accuracyText, playScreen, appX + appWidth * 0.75, appY + appHeight * 0.05, false);
 
             hitTextS = new PIXI.Text();
@@ -605,7 +633,7 @@
             hitTextL = new PIXI.Text();
             adjObj(hitTextL, playScreen, appX + appWidth * 0.875, appY + appHeight * 0.55, false, 0.5);
 
-            perfectText = new PIXI.Text("PERFECT COMBO!!!");
+            perfectText = new PIXI.Text("PERFECT COMBO!!!", Headerstyle);
             adjObj(perfectText, playScreen, appX + appWidth * 0.5, appY + appHeight * 0.3, false, 0.5);
             perfectText.style.fontSize = 30;
 
@@ -616,11 +644,11 @@
             perfectText.visible = false;
 
             //result screen
-            let songText = new PIXI.Text("untiltled");
+            let songText = new PIXI.Text("untiltled", Menustyle2);
             songText.fontWeight = "bold";
             adjObj(songText, resultScreen, appX + appWidth * 0.1, appY + appHeight * 0.05, false);
 
-            let accuracyText = new PIXI.Text("accuracy 0%");
+            let accuracyText = new PIXI.Text("accuracy 0%", Detailstyle);
             adjObj(accuracyText, resultScreen, appX + appWidth * 0.1, appY + appHeight * 0.1, false);
 
             let gradeTextStyle = new PIXI.TextStyle({
@@ -634,25 +662,25 @@
             let gradeText = new PIXI.Text("F", gradeTextStyle);
             adjObj(gradeText, resultScreen, appX + appWidth * 0.8, appY + appHeight * 0.1, false, 0.5);
 
-            let maxComboText = new PIXI.Text("0 combos");
+            let maxComboText = new PIXI.Text("0 combos", Detailstyle);
             adjObj(maxComboText, resultScreen, appX + appWidth * 0.5, appY + appHeight * 0.25, false, 0.5);
 
-            let resultScoreText = new PIXI.Text(score);
+            let resultScoreText = new PIXI.Text(score, Detailstyle);
             adjObj(resultScoreText, resultScreen, appX + appWidth * 0.5, appY + appHeight * 0.2, false, 0.5);
 
-            let perfectTapText = new PIXI.Text("perfect");
+            let perfectTapText = new PIXI.Text("perfect", Detailstyle);
             adjObj(perfectTapText, resultScreen, appX + appWidth * 0.1, appY + appHeight * 0.3, false);
 
-            let goodTapText = new PIXI.Text("good");
+            let goodTapText = new PIXI.Text("good", Detailstyle);
             adjObj(goodTapText, resultScreen, appX + appWidth * 0.6, appY + appHeight * 0.3, false);
 
-            let badTapText = new PIXI.Text("bad");
+            let badTapText = new PIXI.Text("bad", Detailstyle);
             adjObj(badTapText, resultScreen, appX + appWidth * 0.1, appY + appHeight * 0.35, false);
 
-            let missTapText = new PIXI.Text("miss");
+            let missTapText = new PIXI.Text("miss", Detailstyle);
             adjObj(missTapText, resultScreen, appX + appWidth * 0.6, appY + appHeight * 0.35, false);
 
-            let performanceText = new PIXI.Text("Performance Graph");
+            let performanceText = new PIXI.Text("Performance Graph", Menustyle2);
             adjObj(performanceText, resultScreen, appX + appWidth * 0.1, perfromanceGraphProp.y - (appHeight * 0.1), false);
 
             performanceGraph = new PIXI.Graphics();
@@ -681,7 +709,7 @@
             restartButton.on('pointerdown', function () {
                 resultScreen.visible = false;
                 titleScreen.visible = true;
-                if (tokenDict.normal_ticket <= 0 && tokenDict.premiem_ticket <= 0) startButton.interactive = false;
+                if (getTokenValue("normal ticket", "in_stock") <= 0 && getTokenValue("premiem ticket", "in_stock") <= 0) startButton.interactive = false;
             });
 
             //invisible layer

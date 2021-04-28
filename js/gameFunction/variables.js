@@ -12,44 +12,85 @@ var windowWidth = window.screen.width;
 var appHeight;
 var appWidth;
 
-//database
-let playTime = 1;
 let modifier = 0;
-let tokenDict = {
-  normal_ticket: 1,
-  premiem_ticket: 1,
-  boss_coin: 1000,
-  chonlasit_coin: 1000,
-};
 
 var cheatMode = false;
 
-var URdict = [
-    {
-        name: "Xmas foschan",
-        path: "images/char/xmas_foschan2.png",
-        details: "score boost",
-        effect: 0.05
-    }
-]
+//database
+var inventory = [
+  {
+    name: "Chonlasit coin",
+    path: "/images/token/chonlasit_coin.png",
+    desc: "New digital crypto! 1 coin can exchange discount to buy lotteries for 1 THB.",
+    effect: 0,
+    type: "token",
+    rarity: "R",
+    in_stock: 1000
+  },
+  {
+    name: "Boss coin",
+    path: "/images/token/boss_coin.png",
+    desc: "Use for play gacha.",
+    effect: 0,
+    type: "token",
+    rarity: "",
+    in_stock: 1000
+  },
+  {
+    name: "normal ticket",
+    path: "/images/token/normal_ticket.png",
+    desc: "Use for play game.",
+    effect: 0,
+    type: "token",
+    rarity: "",
+    in_stock: 1
+  },
+  {
+    name: "premiem ticket",
+    path: "/images/token/premiem_ticket.png",
+    desc: "Use for play game, will get x5 Boss coins than normal ticket.",
+    effect: 0,
+    type: "token",
+    rarity: "",
+    in_stock: 1
+  },
+  {
+    name: "beach",
+    path: "/images/bg/beach.png",
+    desc: "She sells sea shells by the sea shore. Score boost 1% per LV. (max at 5%)",
+    effect: 0.01,
+    type: "bg",
+    rarity: "SR",
+    in_stock: 1
+  },
+  {
+    name: "Foschan",
+    path: "/images/char/foschan2.png",
+    desc: "First and ONLY mascot in Pianoforte. She will always cheer you on title screen.",
+    effect: 0,
+    type: "char",
+    rarity: "",
+    in_stock: 1
+  },
+  {
+    name: "hill",
+    path: "/images/bg/hill.png",
+    desc: "Beautiful hills, don't mistake spell e instead of i, ok?",
+    effect: 0,
+    type: "bg",
+    rarity: "",
+    in_stock: 1
+  }
+];
 
-var SRdict = [
-    {
-        name: "Chonlasit coin x5",
-        path: "/images/token/chonlasit_coin.png",
-        details: "chonlasit coin",
-        effect: 5
-    }
-]
-
-var Rdict = [
-    {
-        name: "Chonlasit coin x1",
-        path: "/images/token/chonlasit_coin.png",
-        details: "chonlasit coin",
-        effect: 1
-    }
-]
+var equiping = [{
+  type: "bg",
+  details: inventory[6]
+},
+{
+  type: "char",
+  details: inventory[5]
+}];
 
 let song;
 
@@ -167,40 +208,36 @@ let rainbowGradient = [
   "#6f136c",
 ];
 
-const Headerstyle = new PIXI.TextStyle({
-  fontSize: 50,
-  fontWeight: "bolder",
-});
-
-const Menustyle = new PIXI.TextStyle({
-  fontSize: 35,
-  fontStyle: "italic",
-});
-
-const Menustyle2 = new PIXI.TextStyle({
-  fontSize: 35,
-});
-
-const Dangerstyle = new PIXI.TextStyle({
-  fontSize: 35,
-  fill: "#b00b0b"
-});
-
 let top_layer;
 let ground_layer;
+let smallFontSize;
+let normalFontSize;
+let bigFontSize;
 
 if (windowHeight >= 1000 && windowWidth >= 500) {
   appHeight = 800;
   appWidth = 400;
+  smallFontSize = 20;
+  normalFontSize = 35;
+  bigFontSize = 50;
 } else if (windowHeight >= 1000 && windowWidth < 500) {
   appHeight = windowWidth * 1.6;
   appWidth = windowWidth * 0.8;
+  smallFontSize = 10;
+  normalFontSize = 15;
+  bigFontSize = 20;
 } else if (windowHeight < 1000 && windowWidth >= 500) {
   appHeight = windowHeight * 0.8;
   appWidth = windowHeight * 0.4;
+  smallFontSize = 10;
+  normalFontSize = 15;
+  bigFontSize = 20;
 } else {
   appHeight = windowHeight * 0.8;
   appWidth = windowWidth * 0.8;
+  smallFontSize = 10;
+  normalFontSize = 15;
+  bigFontSize = 20;
 }
 
 var appX = windowWidth / 2 - appWidth / 2;
@@ -210,3 +247,28 @@ perfromanceGraphProp.x = appX + appWidth * 0.2;
 perfromanceGraphProp.y = appY + appHeight * 0.5;
 perfromanceGraphProp.width = appWidth * 0.7;
 perfromanceGraphProp.height = appHeight * 0.2;
+
+
+const Headerstyle = new PIXI.TextStyle({
+  fontSize: bigFontSize,
+  fontWeight: "bolder",
+});
+
+const Menustyle = new PIXI.TextStyle({
+  fontSize: normalFontSize,
+  fontStyle: "italic",
+});
+
+const Menustyle2 = new PIXI.TextStyle({
+  fontSize: normalFontSize,
+});
+
+const Detailstyle = new PIXI.TextStyle({
+  fontSize: smallFontSize,
+});
+
+const Dangerstyle = new PIXI.TextStyle({
+  fontSize: normalFontSize,
+  fill: "#b00b0b",
+});
+
