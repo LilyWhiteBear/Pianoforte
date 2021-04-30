@@ -18,7 +18,7 @@ function gameLoop() {
 
     ticker_count += 1;
     //generate note
-    if (ticker_count % Math.floor(100 / speed) === 0 && ticker_count > 500 && !isEnd) {
+    if (ticker_count % Math.floor(200 / speed) === 0 && ticker_count > 500 && !isEnd) {
         let rand = Math.floor(Math.random() * Math.floor(4));
         let type_rand = Math.floor(Math.random() * Math.floor(10));
         if (type_rand >= 1) {

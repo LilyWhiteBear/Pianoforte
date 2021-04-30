@@ -111,13 +111,6 @@ function adjSprite(obj, parent, x, y, width, height, isbutton, anchor) {
   parent.addChild(obj);
 }
 
-function destroyPage(screen) {
-  screen.children.forEach((childObj) => {
-    childObj.destroy();
-    screen.removeChild(childObj);
-  });
-}
-
 function interactiveSwitch(screen, switchs) {
   screen.children.forEach((childObj) => {
     childObj.interactive = switchs;
@@ -163,7 +156,7 @@ function updateInventoryScreen() {
   inventory_backButton.on("pointerdown", function () {
     inventoryScreen.visible = false;
     titleScreen.visible = true;
-    destroyPage(inventoryScreen);
+    inventoryScreen.removeChildren();
   });
 
   let currentItem = 0;
@@ -213,7 +206,7 @@ function updateInventoryScreen() {
           true
         );
         descClose.on("pointerdown", function () {
-          destroyPage(descWindow);
+          descWindow.removeChildren();
           inventoryScreen.removeChild(descWindow);
           interactiveSwitch(inventoryScreen, true);
         });

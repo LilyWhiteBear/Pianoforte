@@ -40,6 +40,7 @@
             tutorialScreen = new PIXI.Container();
             gachaScreen = new PIXI.Container();
             gachaEffectScreen = new PIXI.Container();
+            gachaResultScreen = new PIXI.Container();
             inventoryScreen = new PIXI.Container();
             songSelectScreen = new PIXI.Container();
             playScreen = new PIXI.Container();
@@ -49,6 +50,7 @@
             app.stage.addChild(tutorialScreen);
             app.stage.addChild(gachaScreen);
             app.stage.addChild(gachaEffectScreen);
+            app.stage.addChild(gachaResultScreen);
             app.stage.addChild(inventoryScreen);
             app.stage.addChild(songSelectScreen);
             app.stage.addChild(playScreen);
@@ -58,6 +60,7 @@
             tutorialScreen.visible = false;
             gachaScreen.visible = false;
             gachaEffectScreen.visible = false;
+            gachaResultScreen.visible = false;
             inventoryScreen.visible = false;
             songSelectScreen.visible = false;
             playScreen.visible = false;
@@ -113,6 +116,8 @@
             gachaButton.on('pointerdown', function () {
                 titleScreen.visible = false;
                 gachaScreen.visible = true;
+                boss_coinText.text = "x" + getTokenValue("Boss coin", "in_stock");
+                chonlasit_coinText.text = "x" + getTokenValue("Chonlasit coin", "in_stock");
             });
             titleScreen.addChild(gachaButton);
 
@@ -129,6 +134,26 @@
             //tutorial screen
 
 
+            //gacha effect screen
+            gachaEffectScreen.buttonMode = true;
+            gachaEffectScreen.interactive = true;
+            gachaEffectScreen.on('pointerdown', function () {
+                gachaEffectScreen.visible = false;
+                gachaResultScreen.visible = true;
+                gachaResultShow();
+            });
+
+            let gachaEffectBG = new PIXI.Sprite.from('/images/bg/gacha_bg.png');
+            adjSprite(gachaEffectBG, gachaEffectScreen, appX, appY, appWidth, appHeight, true);
+
+            let gachaEffectText = new PIXI.Text("-TAP TO CONTINUE-", Menustyle2);
+            adjObj(gachaEffectText, gachaEffectScreen, appX + appWidth * 0.5, appY + appHeight * 0.8, true, 0.5);
+
+            let gachaSReffect = new PIXI.Texture.from("/images/res/SR.png");
+            let gachaReffect = new PIXI.Texture.from("/images/res/R.png");
+            let gachaEffect = new PIXI.Sprite();
+            adjSprite(gachaEffect, gachaEffectScreen, appX + appWidth * 0.5, appY + appHeight * 0.5, appWidth * 0.3, appHeight * 0.3, true, 0.5);
+
             //gacha screen
             let boss_coinText = new PIXI.Text("x" + getTokenValue("Boss coin", "in_stock"), Detailstyle);
             adjObj(boss_coinText, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.01, false);
@@ -139,8 +164,9 @@
             let chonlasit_coinText = new PIXI.Text("x" + getTokenValue("Chonlasit coin", "in_stock"), Detailstyle);
             adjObj(chonlasit_coinText, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.06, false);
 
-            let chonlasit_coinImage = new PIXI.Sprite.from(getTokenValue("Chonlasit coin", "path"));
-            adjSprite(chonlasit_coinImage, gachaScreen, appX + appWidth * 0.6, appY + appHeight * 0.05, appWidth * 0.1, appHeight * 0.05, false);
+            //let chonlasit_coinImage = new PIXI.Sprite.from(getTokenValue("Chonlasit coin", "path"));
+            let chonlasit_coinImage = new PIXI.Sprite.from("/images/token/chonlasit_coin copy.png");
+            adjSprite(chonlasit_coinImage, gachaScreen, appX + appWidth * 0.6, appY + appHeight * 0.06, appWidth * 0.1, appHeight * 0.05, false);
 
             let esc_text = new PIXI.Text("BACK", Menustyle);
             adjObj(esc_text, gachaScreen, appX, appY, true);
@@ -164,7 +190,7 @@
                 let close_rateWindow = new PIXI.Text("X", Menustyle2);
                 adjObj(close_rateWindow, rateWindow, appX + appWidth * 0.8, appY + appHeight * 0.32, true);
                 close_rateWindow.on('pointerdown', function () {
-                    destroyPage(rateWindow);
+                    rateWindow.removeChildren();
                     gachaScreen.removeChild(rateWindow);
                     interactiveSwitch(gachaScreen, true);
                 })
@@ -183,7 +209,6 @@
             adjSprite(gachaPlayx1, gachaScreen, appX + appWidth * 0.25, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
             gachaPlayx1.on('pointerdown', function () {
                 if (getTokenValue("Boss coin", "in_stock") >= 10) {
-                    //gachaScreen.visible = false;
                     gachaPlay(1);
                 }
                 else {
@@ -201,7 +226,6 @@
             adjSprite(gachaPlayx10, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
             gachaPlayx10.on('pointerdown', function () {
                 if (getTokenValue("Boss coin", "in_stock") >= 100) {
-                    //gachaScreen.visible = false;
                     gachaPlay(10);
                 }
                 else {
@@ -235,6 +259,7 @@
                 }
 
                 let timesLeft = times;
+                gachaEffect.texture = gachaReffect;
 
                 while (timesLeft > 0) {
                     timesLeft--;
@@ -246,6 +271,7 @@
                     else {
                         let SRrand = Math.floor(Math.random() * SRitems.length);
                         tempGachaCache.push(SRitems[SRrand]);
+                        gachaEffect.texture = gachaSReffect;
                     }
                 }
                 tempGachaCache.forEach(result => {
@@ -253,6 +279,9 @@
                 });
                 boss_coinText.text = "x" + getTokenValue("Boss coin", "in_stock");
                 chonlasit_coinText.text = "x" + getTokenValue("Chonlasit coin", "in_stock");
+
+                gachaScreen.visible = false;
+                gachaEffectScreen.visible = true;
             }
 
             function invalidGachaPlay() {
@@ -269,9 +298,60 @@
                     ticker_invalid.stop();
                 }
             }
-            //gacha effect screen
+
+            //gacha result screen
+            let resultText = new PIXI.Text("Result", Menustyle2);
+            adjObj(resultText, gachaResultScreen, appX + appWidth * 0.05, appY + appHeight * 0.02, false);
+
+            let gachaResultBox = new PIXI.Graphics();
+            gachaResultBox.beginFill(0xffffff);
+            gachaResultBox.drawRect(appX + appWidth * 0.05, appY + appHeight * 0.1, appWidth * 0.9, appHeight * 0.7);
+            gachaResultScreen.addChild(gachaResultBox);
+
+            let exitFromResult = new PIXI.Sprite.from("/images/button/exit_button.png");
+            adjSprite(exitFromResult, gachaResultScreen, appX + appWidth * 0.5, appY + appHeight * 0.9, appWidth * 0.3, appWidth * 0.1, true, 0.5);
+            exitFromResult.on('pointerdown', function () {
+                while (temporaryResultObj.length > 0) {
+                    temporaryResultObj[0].destroy();
+                    gachaResultScreen.removeChild(temporaryResultObj[0]);
+                    temporaryResultObj.shift();
+                }
+                gachaResultScreen.visible = false;
+                gachaScreen.visible = true;
+            });
 
 
+            let temporaryResultObj = [];
+
+            function gachaResultShow() {
+                let i = 0;
+                tempGachaCache.forEach(item => {
+                    let itemImage = new PIXI.Sprite();
+                    temporaryResultObj.push(itemImage);
+                    adjSprite(itemImage, gachaResultScreen, appX + appWidth * (0.1 + (i % 4) * 0.22), appY + appHeight * (0.12 + Math.floor(i / 4) * 0.25), appWidth * 0.15, appHeight * 0.1);
+                    if (item.name !== "Chonlasit coin" && getTokenValue(item.name, "in_stock") > 5) {
+                        let itemImport = new PIXI.Text("5", Detailstyle);
+                        temporaryResultObj.push(itemImport);
+                        adjObj(itemImport, gachaResultScreen, appX + appWidth * (0.175 + (i % 4) * 0.22), appY + appHeight * (0.27 + Math.floor(i / 4) * 0.25), false, 0.5);
+                        setTokenValue(item.name, "in_stock", getTokenValue(item.name, "in_stock") - 1);
+                        setTokenValue("Chonlasit coin", "in_stock", chonValue + 5);
+
+                        let itemTexture = new PIXI.Texture.from(getTokenValue("Chonlasit coin", "path"));
+                        temporaryResultObj.push(itemTexture);
+                        itemImage.texture = itemTexture;
+                    }
+                    else {
+                        let itemImport = new PIXI.Text("1", Detailstyle);
+                        temporaryResultObj.push(itemImport);
+                        adjObj(itemImport, gachaResultScreen, appX + appWidth * (0.175 + (i % 4) * 0.22), appY + appHeight * (0.27 + Math.floor(i / 4) * 0.25), false, 0.5);
+
+                        let itemTexture = new PIXI.Texture.from(getTokenValue(item.name, "path"));
+                        temporaryResultObj.push(itemTexture);
+                        itemImage.texture = itemTexture;
+                    }
+                    i++;
+                });
+            }
 
             //song select screen
             let backButton = new PIXI.Text("BACK", Menustyle);
@@ -389,7 +469,6 @@
                         rankText.text = "EASY"
                     }
                 }
-
             });
 
             let songContainer = new PIXI.Container();
@@ -441,7 +520,6 @@
                         if (speed > 4) {
                             speed--;
                             speedModifyConfirm.text = speed;
-                            rankTextModify();
                         }
                     });
 
@@ -451,25 +529,23 @@
                         if (speed < 20) {
                             speed++;
                             speedModifyConfirm.text = speed;
-                            rankTextModify();
                         }
                     });
 
                     let speedModifyConfirm = new PIXI.Text(speed, Menustyle2);
                     adjObj(speedModifyConfirm, confirmSpeedScreen, appX + appWidth * 0.72, appY + appHeight * 0.47, true, 0.5);
 
-                    let playButtonNormal = new PIXI.Sprite.from("/images/button/button.png");
-                    adjObj(playButtonNormal, confirmSpeedScreen, appX + appWidth * 0.3, appY + appHeight * 0.6, true, 0.5);
+                    let playButtonNormal = new PIXI.Sprite.from("/images/button/useNormalTicket.png");
+                    adjSprite(playButtonNormal, confirmSpeedScreen, appX + appWidth * 0.3, appY + appHeight * 0.6, appWidth * 0.3, appWidth * 0.1, true, 0.5);
                     if (getTokenValue("normal ticket", "in_stock") <= 0) playButtonNormal.interactive = false;
                     playButtonNormal.on('pointerdown', function () { gameStart(1); });
 
-                    let playButtonPremiem = new PIXI.Sprite.from("/images/button/button.png");
-                    adjObj(playButtonPremiem, confirmSpeedScreen, appX + appWidth * 0.7, appY + appHeight * 0.6, true, 0.5);
+                    let playButtonPremiem = new PIXI.Sprite.from("/images/button/usePremiemTicket.png");
+                    adjSprite(playButtonPremiem, confirmSpeedScreen, appX + appWidth * 0.7, appY + appHeight * 0.6, appWidth * 0.3, appWidth * 0.1, true, 0.5);
                     if (getTokenValue("premiem ticket", "in_stock") <= 0) playButtonPremiem.interactive = false;
                     playButtonPremiem.on('pointerdown', function () { gameStart(5); });
 
                     function gameStart(modifier) {
-                        console.log(getTokenValue("normal ticket", "in_stock") - 1);
                         if (modifier === 1 && getTokenValue("normal ticket", "in_stock") > 0) {
                             setTokenValue("normal ticket", "in_stock", getTokenValue("normal ticket", "in_stock") - 1);
                             normalTicketText.text = "x" + getTokenValue("normal ticket", "in_stock");
@@ -523,15 +599,39 @@
                                 setTimeout(function () {
                                     isEnd = false;
                                     songText.text = songDict[i].name;
-
-                                    if (accuracy === 100) gradeText.text = "SSS";
-                                    else if (accuracy >= 95) gradeText.text = "SS";
-                                    else if (accuracy >= 90) gradeText.text = "S";
-                                    else if (accuracy >= 85) gradeText.text = "A";
-                                    else if (accuracy >= 80) gradeText.text = "B";
-                                    else if (accuracy >= 70) gradeText.text = "C";
-                                    else if (accuracy >= 50) gradeText.text = "D";
-                                    else gradeText.text = "F";
+                                    let accuracyModifier = 0;
+                                    if (accuracy > 99.99) {
+                                        gradeText.text = "SSS";
+                                        accuracyModifier = 1.5;
+                                    }
+                                    else if (accuracy >= 95) {
+                                        gradeText.text = "SS";
+                                        accuracyModifier = 1.3;
+                                    }
+                                    else if (accuracy >= 90) {
+                                        gradeText.text = "S";
+                                        accuracyModifier = 1.1;
+                                    }
+                                    else if (accuracy >= 85) {
+                                        gradeText.text = "A";
+                                        accuracyModifier = 1;
+                                    }
+                                    else if (accuracy >= 80) {
+                                        gradeText.text = "B";
+                                        accuracyModifier = 0.9;
+                                    }
+                                    else if (accuracy >= 70) {
+                                        gradeText.text = "C";
+                                        accuracyModifier = 0.8;
+                                    }
+                                    else if (accuracy >= 50) {
+                                        gradeText.text = "D";
+                                        accuracyModifier = 0.7;
+                                    }
+                                    else {
+                                        gradeText.text = "F";
+                                        accuracyModifier = 0;
+                                    }
                                     accuracyText.text = "accuracy " + accuracy + "%";
                                     maxComboText.text = "Max Combo : " + maxCombo + "combo";
                                     resultScoreText.text = "score : " + score;
@@ -557,6 +657,14 @@
                                         resultScreen.addChild(candle);
                                         candleArray.push(candle);
                                     }
+                                    let itemModifier = 0;
+                                    inventory.forEach(item => {
+                                        itemModifier += (item.effect * item.in_stock);
+                                    });
+                                    bossCoinConverted = Math.ceil(score / 50000 * accuracyModifier) * modifier;
+                                    itemModifier = Math.ceil(itemModifier * bossCoinConverted);
+                                    getBossCoinText.text = "Boss coin get : " + bossCoinConverted + " + " + itemModifier;
+                                    setTokenValue("Boss coin", "in_stock", getTokenValue("Boss coin", "in_stock") + bossCoinConverted + itemModifier);
                                 }, 8000);
                             }
                         }
@@ -749,7 +857,6 @@
 
             perfectText = new PIXI.Text("PERFECT COMBO!!!", Headerstyle);
             adjObj(perfectText, playScreen, appX + appWidth * 0.5, appY + appHeight * 0.3, false, 0.5);
-            perfectText.style.fontSize = 30;
 
             hitTextS.visible = false;
             hitTextD.visible = false;
@@ -818,7 +925,10 @@
             adjObj(missText, resultScreen, appX + appWidth * 0.1, perfromanceGraphProp.y + (perfromanceGraphProp.height * 4 / 5), false, 0.5);
             missText.style.fontSize = 8;
 
-            let restartButton = new PIXI.Sprite.from("images/button/button.png");
+            let getBossCoinText = new PIXI.Text("Boss coin get : ", 0);
+            adjObj(getBossCoinText, resultScreen, appX + appWidth * 0.5, appY + appHeight * 0.8, false, 0.5)
+
+            let restartButton = new PIXI.Sprite.from("images/button/exit_button.png");
             adjSprite(restartButton, resultScreen, appX + appWidth * 0.5, appY + appHeight * 0.9, appWidth * 0.3, appHeight * 0.1, true, 0.5);
             restartButton.on('pointerdown', function () {
                 resultScreen.visible = false;

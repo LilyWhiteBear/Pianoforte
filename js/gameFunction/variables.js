@@ -13,6 +13,7 @@ var appHeight;
 var appWidth;
 
 let modifier = 0;
+let bossCoinConverted = 0;
 
 var cheatMode = false;
 
