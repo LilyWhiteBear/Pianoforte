@@ -122,7 +122,7 @@
                 titleScreen.visible = false;
                 inventoryScreen.visible = true;
                 //inventory screen
-                updateInventoryScreen(); 
+                updateInventoryScreen();
             });
             titleScreen.addChild(inventoryButton);
 
@@ -149,14 +149,128 @@
                 gachaScreen.visible = false;
             });
 
+            let banner = new PIXI.Sprite.from("/images/banner/pickup_banner1.png");
+            adjSprite(banner, gachaScreen, appX + appWidth * 0.05, appY + appHeight * 0.3, appWidth * 0.9, appHeight * 0.2, false);
+
+            let rate_text = new PIXI.Text("อัตราการออกกาชา", Menustyle2);
+            adjObj(rate_text, gachaScreen, appX + appWidth * 0.5, appY + appHeight * 0.6, true, 0.5);
+            rate_text.on('pointerdown', function () {
+                interactiveSwitch(gachaScreen, false);
+                let rateWindow = new PIXI.Graphics();
+                rateWindow.beginFill(0xffffff);
+                rateWindow.drawRect(appX + appWidth * 0.1, appY + appHeight * 0.3, appWidth * 0.8, appHeight * 0.4);
+                gachaScreen.addChild(rateWindow);
+
+                let close_rateWindow = new PIXI.Text("X", Menustyle2);
+                adjObj(close_rateWindow, rateWindow, appX + appWidth * 0.8, appY + appHeight * 0.32, true);
+                close_rateWindow.on('pointerdown', function () {
+                    destroyPage(rateWindow);
+                    gachaScreen.removeChild(rateWindow);
+                    interactiveSwitch(gachaScreen, true);
+                })
+
+                let NArate = new PIXI.Text("Secret ???%", Dangerstyle);
+                adjObj(NArate, rateWindow, appX + appWidth * 0.5, appY + appHeight * 0.4, false, 0.5);
+
+                let SRrate = new PIXI.Text("SR 2%", Menustyle2);
+                adjObj(SRrate, rateWindow, appX + appWidth * 0.5, appY + appHeight * 0.5, false, 0.5);
+
+                let Rrate = new PIXI.Text("R 98%", Menustyle2);
+                adjObj(Rrate, rateWindow, appX + appWidth * 0.5, appY + appHeight * 0.6, false, 0.5);
+            });
+
             let gachaPlayx1 = new PIXI.Sprite.from("/images/button/gachaPlay1.png");
             adjSprite(gachaPlayx1, gachaScreen, appX + appWidth * 0.25, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
+            gachaPlayx1.on('pointerdown', function () {
+                if (getTokenValue("Boss coin", "in_stock") >= 10) {
+                    //gachaScreen.visible = false;
+                    gachaPlay(1);
+                }
+                else {
+                    if (invalid_tick === 0) {
+                        invalidText = new PIXI.Text("not enough Boss coin", { fontSize: 1 });
+                        adjObj(invalidText, gachaScreen, appX + appWidth * 0.5, appY + appHeight * 0.9, false, 0.5);
+                        ticker_invalid = new PIXI.Ticker();
+                        ticker_invalid.autoStart = true;
+                        ticker_invalid.add(invalidGachaPlay);
+                    }
+                }
+            });
 
             let gachaPlayx10 = new PIXI.Sprite.from("/images/button/gachaPlay10.png");
             adjSprite(gachaPlayx10, gachaScreen, appX + appWidth * 0.75, appY + appHeight * 0.8, appWidth * 0.45, appWidth * 0.15, true, 0.5);
+            gachaPlayx10.on('pointerdown', function () {
+                if (getTokenValue("Boss coin", "in_stock") >= 100) {
+                    //gachaScreen.visible = false;
+                    gachaPlay(10);
+                }
+                else {
+                    if (invalid_tick === 0) {
+                        invalidText = new PIXI.Text("not enough Boss coin", { fontSize: 1 });
+                        adjObj(invalidText, gachaScreen, appX + appWidth * 0.5, appY + appHeight * 0.9, false, 0.5);
+                        ticker_invalid = new PIXI.Ticker();
+                        ticker_invalid.autoStart = true;
+                        ticker_invalid.add(invalidGachaPlay);
+                    }
+                }
+            });
 
+            function gachaPlay(times) {
+                setTokenValue("Boss coin", "in_stock", getTokenValue("Boss coin", "in_stock") - times * 10);
+                let cacheLength = tempGachaCache.length;
+                let Ritems = [];
+                let SRitems = [];
+                inventory.forEach(item => {
+                    if (item.rarity === "R") {
+                        Ritems.push(item);
+                    }
+                    else if (item.rarity === "SR") {
+                        SRitems.push(item);
+                    }
+                });
 
+                while (cacheLength > 0) {
+                    cacheLength--;
+                    tempGachaCache.pop();
+                }
+
+                let timesLeft = times;
+
+                while (timesLeft > 0) {
+                    timesLeft--;
+                    let rand = Math.random();
+                    if (rand > 0.02) {
+                        let Rrand = Math.floor(Math.random() * Ritems.length);
+                        tempGachaCache.push(Ritems[Rrand]);
+                    }
+                    else {
+                        let SRrand = Math.floor(Math.random() * SRitems.length);
+                        tempGachaCache.push(SRitems[SRrand]);
+                    }
+                }
+                tempGachaCache.forEach(result => {
+                    setTokenValue(result.name, "in_stock", getTokenValue(result.name, "in_stock") + 1);
+                });
+                boss_coinText.text = "x" + getTokenValue("Boss coin", "in_stock");
+                chonlasit_coinText.text = "x" + getTokenValue("Chonlasit coin", "in_stock");
+            }
+
+            function invalidGachaPlay() {
+                if (invalid_tick <= 30) {
+                    invalid_tick++;
+                    invalidText.style.fontSize = invalid_tick;
+                }
+                else if (invalid_tick <= 100) {
+                    invalid_tick++;
+                }
+                else {
+                    invalid_tick = 0;
+                    gachaScreen.removeChild(invalidText);
+                    ticker_invalid.stop();
+                }
+            }
             //gacha effect screen
+
 
 
             //song select screen
@@ -252,7 +366,7 @@
                 let rankDesc = new PIXI.Text("Difficulty", Menustyle2);
                 adjObj(rankDesc, settingContainer, appX + appWidth * 0.05, appY + appHeight * 0.35, false);
 
-                let rankText = new PIXI.Text("", {fontSize: normalFontSize});
+                let rankText = new PIXI.Text("", { fontSize: normalFontSize });
                 rankText.style.fontWeight = "bold";
                 adjObj(rankText, settingContainer, appX + appWidth * 0.72, appY + appHeight * 0.37, false, 0.5);
                 rankTextModify();
@@ -532,7 +646,7 @@
 
                     let yesText = new PIXI.Text("yes", Dangerstyle);
                     adjObj(yesText, confirmExitScreen, appX + appWidth * 0.4, appY + appHeight * 0.5, true, 0.5);
-                    yesText.on('pointerdown', function() {
+                    yesText.on('pointerdown', function () {
                         interactiveSwitch(playScreen, true);
                         clearPlayScreen();
                         playScreen.removeChild(pauseScreen);
@@ -542,7 +656,7 @@
 
                     let noText = new PIXI.Text("no", Menustyle2);
                     adjObj(noText, confirmExitScreen, appX + appWidth * 0.6, appY + appHeight * 0.5, true, 0.5);
-                    noText.on('pointerdown', function() {
+                    noText.on('pointerdown', function () {
                         interactiveSwitch(pauseScreen, true);
                         pauseScreen.removeChild(confirmExitScreen);
                     });

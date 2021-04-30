@@ -16,6 +16,8 @@ let modifier = 0;
 
 var cheatMode = false;
 
+let tempGachaCache = [];
+
 //database
 var inventory = [
   {
@@ -61,12 +63,12 @@ var inventory = [
     effect: 0.01,
     type: "bg",
     rarity: "SR",
-    in_stock: 1
+    in_stock: 0
   },
   {
     name: "Foschan",
     path: "/images/char/foschan2.png",
-    desc: "First and ONLY mascot in Pianoforte. She will always cheer you on title screen.",
+    desc: "First mascot in Pianoforte. She will always cheer you on title screen.",
     effect: 0,
     type: "char",
     rarity: "",
@@ -137,6 +139,9 @@ let hitTextL;
 
 let foschan1;
 let foschan2;
+let invalid_tick = 0;
+let ticker_invalid;
+let invalidText;
 
 let textureSButton;
 let textureDButton;
