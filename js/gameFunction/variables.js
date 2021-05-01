@@ -99,24 +99,19 @@ let song;
 
 var songDict = [
   {
-    name: "POWER SPOT",
-    path: "sounds/POWER_SPOT!!.ogg",
-    time: "3:57",
-  },
-  {
-    name: "MIRACLE WAVE",
-    path: "sounds/MIRACLE_WAVE.ogg",
-    time: "4:12",
+    name: "BUTTER FLY",
+    path: "sounds/Butterfly.mp3",
+    time: "1:28",
   },
   {
     name: "VIVID WORLD",
-    path: "sounds/VIVID WORLD (short ver.).mp3",
+    path: "sounds/VIVID WORLD.mp3",
     time: "1:38",
   },
   {
-    name: "START DASH",
-    path: "sounds/Start-Dash!!.ogg",
-    time: "4:17",
+    name: "POPPIN' UP!",
+    path: "sounds/Poppin' Up!.mp3",
+    time: "1:34",
   },
   {
     name: "ANGELIC ANGEL",
@@ -124,9 +119,9 @@ var songDict = [
     time: "1:49",
   },
   {
-    name: "PURE PHRASE",
-    path: "sounds/09._PURE_PHRASE.ogg",
-    time: "5:10",
+    name: "SOLITUDE RAIN",
+    path: "sounds/Solitude Rain.mp3",
+    time: "1:37",
   },
 ];
 
